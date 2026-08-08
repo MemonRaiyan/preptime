@@ -91,6 +91,10 @@ interface AppContextType {
   upvotePost: (postId: string) => void;
   
   resetProgress: () => void;
+  currentUserEmail: string | null;
+  registerUser: (email: string, password: string, name: string) => boolean;
+  loginUser: (email: string, password: string) => boolean;
+  logoutUser: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -138,9 +142,176 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [pomodoroMode, setPomodoroMode] = useState<'study' | 'shortBreak' | 'longBreak'>('study');
   const [todayStudyMinutes, setTodayStudyMinutes] = useState<number>(45);
 
-  // Load from local storage
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+  const saveUserProgress = useCallback((email: string, updates: any) => {
+    try {
+      const dbStr = localStorage.getItem('fmge_users_database');
+      const db = dbStr ? JSON.parse(dbStr) : [];
+      const userIndex = db.findIndex((u: any) => u.email.toLowerCase() === email.toLowerCase());
+      if (userIndex !== -1) {
+        db[userIndex] = {
+          ...db[userIndex],
+          ...updates
+        };
+        localStorage.setItem('fmge_users_database', JSON.stringify(db));
+      }
+    } catch (e) {
+      console.warn('Error saving user progress', e);
+    }
+  }, []);
+
+  const registerUser = (email: string, password: string, name: string): boolean => {
+    try {
+      const dbStr = localStorage.getItem('fmge_users_database');
+      const db = dbStr ? JSON.parse(dbStr) : [];
+      if (db.some((u: any) => u.email.toLowerCase() === email.toLowerCase())) {
+        return false;
+      }
+      
+      const newAccount = {
+        email,
+        passwordHash: password,
+        profile: {
+          id: 'usr_' + Math.random().toString(36).substring(2, 11),
+          name: name,
+          attemptNumber: 1,
+          previousScore: null,
+          targetExam: 'December 2026',
+          studyHoursPerDay: 8,
+          strongSubjects: ['anatomy', 'physiology'],
+          weakSubjects: ['psm', 'medicine'],
+          learningStyle: 'mixed',
+          currentLevel: 'intermediate',
+          preferredLanguage: 'english',
+          streak: 1,
+          lastStudyDate: new Date().toISOString().split('T')[0],
+          xp: 100,
+          level: 1,
+          badges: ['FMGE Registered Member'],
+          estimatedScoreRange: [120, 145],
+          onboarded: true,
+          dailyGoalMinutes: 480,
+          todayStudyMinutes: 30
+        },
+        attempts: [],
+        flashcards: FLASHCARDS,
+        studyPlan: null,
+        dailyTasks: [],
+        gtAttempts: [],
+        userUploadedResources: [],
+        userGeneratedSimulators: []
+      };
+      
+      db.push(newAccount);
+      localStorage.setItem('fmge_users_database', JSON.stringify(db));
+      
+      // Auto login after signup
+      loginUser(email, password);
+      return true;
+    } catch (e) {
+      console.warn(e);
+      return false;
+    }
+  };
+
+  const loginUser = (email: string, password: string): boolean => {
+    try {
+      const dbStr = localStorage.getItem('fmge_users_database');
+      const db = dbStr ? JSON.parse(dbStr) : [];
+      const user = db.find((u: any) => u.email.toLowerCase() === email.toLowerCase() && u.passwordHash === password);
+      if (!user) return false;
+      
+      setCurrentUserEmail(user.email);
+      localStorage.setItem('fmge_active_user', user.email);
+      
+      if (user.profile) {
+        setProfile(user.profile);
+        localStorage.setItem(PROFILE_KEY, JSON.stringify(user.profile));
+      }
+      setAttempts(user.attempts || []);
+      localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(user.attempts || []));
+      
+      setFlashcards(user.flashcards || FLASHCARDS);
+      localStorage.setItem(FLASHCARDS_KEY, JSON.stringify(user.flashcards || FLASHCARDS));
+      
+      setStudyPlan(user.studyPlan || null);
+      if (user.studyPlan) localStorage.setItem(PLAN_KEY, JSON.stringify(user.studyPlan));
+      else localStorage.removeItem(PLAN_KEY);
+      
+      setDailyTasks(user.dailyTasks || []);
+      localStorage.setItem(TASKS_KEY, JSON.stringify(user.dailyTasks || []));
+      
+      setGtAttempts(user.gtAttempts || []);
+      localStorage.setItem(GT_KEY, JSON.stringify(user.gtAttempts || []));
+      
+      setUserUploadedResources(user.userUploadedResources || []);
+      localStorage.setItem(USER_UPLOADS_KEY, JSON.stringify(user.userUploadedResources || []));
+      
+      setUserGeneratedSimulators(user.userGeneratedSimulators || []);
+      localStorage.setItem(USER_SIMULATORS_KEY, JSON.stringify(user.userGeneratedSimulators || []));
+      
+      return true;
+    } catch (e) {
+      console.warn(e);
+      return false;
+    }
+  };
+
+  const logoutUser = () => {
+    setCurrentUserEmail(null);
+    localStorage.removeItem('fmge_active_user');
+    
+    // Clear all states
+    setProfile(null);
+    localStorage.removeItem(PROFILE_KEY);
+    setAttempts([]);
+    localStorage.removeItem(ATTEMPTS_KEY);
+    setFlashcards(FLASHCARDS);
+    localStorage.setItem(FLASHCARDS_KEY, JSON.stringify(FLASHCARDS));
+    setStudyPlan(null);
+    localStorage.removeItem(PLAN_KEY);
+    setDailyTasks([]);
+    localStorage.removeItem(TASKS_KEY);
+    setGtAttempts([]);
+    localStorage.removeItem(GT_KEY);
+    setUserUploadedResources([]);
+    localStorage.removeItem(USER_UPLOADS_KEY);
+    setUserGeneratedSimulators([]);
+    localStorage.removeItem(USER_SIMULATORS_KEY);
+  };
+
+  // Load from local storage (with active user handling)
   useEffect(() => {
     try {
+      const activeUser = localStorage.getItem('fmge_active_user');
+      if (activeUser) {
+        const dbStr = localStorage.getItem('fmge_users_database');
+        const db = dbStr ? JSON.parse(dbStr) : [];
+        const user = db.find((u: any) => u.email.toLowerCase() === activeUser.toLowerCase());
+        if (user) {
+          setCurrentUserEmail(user.email);
+          if (user.profile) setProfile(user.profile);
+          if (user.attempts) setAttempts(user.attempts);
+          if (user.flashcards) setFlashcards(user.flashcards);
+          if (user.studyPlan) setStudyPlan(user.studyPlan);
+          if (user.dailyTasks) setDailyTasks(user.dailyTasks);
+          if (user.gtAttempts) setGtAttempts(user.gtAttempts);
+          if (user.userUploadedResources) setUserUploadedResources(user.userUploadedResources);
+          if (user.userGeneratedSimulators) setUserGeneratedSimulators(user.userGeneratedSimulators);
+          
+          const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+          if (savedTheme) {
+            setTheme(savedTheme);
+            document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+          }
+          const savedFlags = localStorage.getItem(FLAGS_KEY);
+          if (savedFlags) setFeatureFlags(JSON.parse(savedFlags));
+          return;
+        }
+      }
+
+      // Legacy fallback
       const savedProfile = localStorage.getItem(PROFILE_KEY);
       const savedAttempts = localStorage.getItem(ATTEMPTS_KEY);
       const savedFlashcards = localStorage.getItem(FLASHCARDS_KEY);
@@ -178,7 +349,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (savedFlags) setFeatureFlags(JSON.parse(savedFlags));
       if (savedCommunity) setCommunityPosts(JSON.parse(savedCommunity));
       
-      // Theme setting
       if (savedTheme) {
         setTheme(savedTheme);
         document.documentElement.classList.toggle('dark', savedTheme === 'dark');
@@ -192,7 +362,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
-  // Global Keyboard Shortcuts (Ctrl+K or Cmd+K for One-Search)
+  // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
@@ -233,26 +403,39 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => clearInterval(interval);
   }, [pomodoroActive, pomodoroSeconds, pomodoroMode, profile]);
 
-  // Persistence effects
+  // Persistence effects with multi-user DB synchronization
   useEffect(() => {
-    if (profile) localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
-  }, [profile]);
+    if (profile) {
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+      if (currentUserEmail) saveUserProgress(currentUserEmail, { profile });
+    }
+  }, [profile, currentUserEmail, saveUserProgress]);
 
   useEffect(() => {
     localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(attempts));
-  }, [attempts]);
+    if (currentUserEmail) saveUserProgress(currentUserEmail, { attempts });
+  }, [attempts, currentUserEmail, saveUserProgress]);
 
   useEffect(() => {
-    if (flashcards.length > 0) localStorage.setItem(FLASHCARDS_KEY, JSON.stringify(flashcards));
-  }, [flashcards]);
+    if (flashcards.length > 0) {
+      localStorage.setItem(FLASHCARDS_KEY, JSON.stringify(flashcards));
+      if (currentUserEmail) saveUserProgress(currentUserEmail, { flashcards });
+    }
+  }, [flashcards, currentUserEmail, saveUserProgress]);
 
   useEffect(() => {
-    if (studyPlan) localStorage.setItem(PLAN_KEY, JSON.stringify(studyPlan));
-  }, [studyPlan]);
+    if (studyPlan) {
+      localStorage.setItem(PLAN_KEY, JSON.stringify(studyPlan));
+      if (currentUserEmail) saveUserProgress(currentUserEmail, { studyPlan });
+    }
+  }, [studyPlan, currentUserEmail, saveUserProgress]);
 
   useEffect(() => {
-    if (dailyTasks.length > 0) localStorage.setItem(TASKS_KEY, JSON.stringify(dailyTasks));
-  }, [dailyTasks]);
+    if (dailyTasks.length > 0) {
+      localStorage.setItem(TASKS_KEY, JSON.stringify(dailyTasks));
+      if (currentUserEmail) saveUserProgress(currentUserEmail, { dailyTasks });
+    }
+  }, [dailyTasks, currentUserEmail, saveUserProgress]);
 
   useEffect(() => {
     if (resources.length > 0) localStorage.setItem(RESOURCES_KEY, JSON.stringify(resources));
@@ -260,7 +443,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     localStorage.setItem(GT_KEY, JSON.stringify(gtAttempts));
-  }, [gtAttempts]);
+    if (currentUserEmail) saveUserProgress(currentUserEmail, { gtAttempts });
+  }, [gtAttempts, currentUserEmail, saveUserProgress]);
 
   useEffect(() => {
     localStorage.setItem(FLAGS_KEY, JSON.stringify(featureFlags));
@@ -836,7 +1020,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addCommunityPost,
       addCommunityComment,
       upvotePost,
-      resetProgress
+      resetProgress,
+      currentUserEmail,
+      registerUser,
+      loginUser,
+      logoutUser
     }}>
       {children}
     </AppContext.Provider>

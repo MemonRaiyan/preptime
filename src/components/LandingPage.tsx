@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Sparkles, BookOpen, Video, PenTool, Award, Brain, 
   Stethoscope, Image as ImageIcon, ShieldCheck, ArrowRight, 
   CheckCircle2, Compass, Zap 
 } from 'lucide-react';
+import { AuthModal } from './AuthModal';
 
 interface LandingPageProps {
   onStartFree: () => void;
@@ -18,8 +19,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onTakeDiagnostic,
   onOpenTutor
 }) => {
+  const [showAuth, setShowAuth] = useState(false);
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-teal-500 selection:text-white">
+      <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
       
       {/* Top Navbar */}
       <header className="px-6 md:px-12 py-5 flex items-center justify-between border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
@@ -33,6 +37,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
 
         <div className="flex items-center space-x-3">
+          <button
+            onClick={() => setShowAuth(true)}
+            className="text-slate-300 hover:text-white text-xs font-bold px-3 py-2 transition-all"
+          >
+            Log In / Sign Up
+          </button>
           <button
             onClick={onTakeDiagnostic}
             className="hidden sm:inline-flex bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-2xl text-xs font-bold transition-all"

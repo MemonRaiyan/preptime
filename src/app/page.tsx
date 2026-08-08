@@ -8,9 +8,7 @@ import { Sidebar } from '../components/Sidebar';
 import { MobileNav } from '../components/MobileNav';
 import { GlobalSearchModal } from '../components/GlobalSearchModal';
 
-// All View Sub-Screens
 import { Dashboard } from '../components/Dashboard';
-import { FreeResourceHub } from '../components/FreeResourceHub';
 import { SyllabusMapView } from '../components/SyllabusMapView';
 import { SmartNotesView } from '../components/SmartNotesView';
 import { PracticeArena } from '../components/PracticeArena';
@@ -27,7 +25,6 @@ import { ExamInfoHub } from '../components/ExamInfoHub';
 import { CommunityView } from '../components/CommunityView';
 import { AdminPanel } from '../components/AdminPanel';
 import { AnalyticsView } from '../components/AnalyticsView';
-import { VideoPracticeView } from '../components/VideoPracticeView';
 import { PYQPapersView } from '../components/PYQPapersView';
 
 import { Search, Flame } from 'lucide-react';
@@ -57,10 +54,6 @@ export default function Home() {
     switch (activeTab) {
       case 'dashboard':
         return <Dashboard />;
-      case 'resources':
-        return <FreeResourceHub />;
-      case 'video-practice':
-        return <VideoPracticeView />;
       case 'pyq-papers':
         return <PYQPapersView />;
       case 'syllabus-map':

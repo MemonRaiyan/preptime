@@ -1,22 +1,25 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { 
   LayoutDashboard, Calendar, BookOpen, PenTool, Brain, AlertTriangle, 
   Award, Sparkles, Stethoscope, Image as ImageIcon, RotateCcw, Clock, 
-  Users, ShieldAlert, LogOut, Sun, Moon, Search, Video, Compass, HelpCircle, BarChart3, Flame
+  Users, ShieldAlert, LogOut, Sun, Moon, Search, Compass, HelpCircle, BarChart3, Flame
 } from 'lucide-react';
+import { AuthModal } from './AuthModal';
 
 export const Sidebar: React.FC = () => {
-  const { activeTab, setActiveTab, profile, theme, toggleTheme, resetProgress, openSearch } = useApp();
+  const { 
+    activeTab, setActiveTab, profile, theme, toggleTheme, 
+    resetProgress, openSearch, currentUserEmail, logoutUser 
+  } = useApp();
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   if (!profile) return null;
 
   const mainNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'resources', label: 'Free Resource Hub', icon: Search },
-    { id: 'video-practice', label: 'Video Question Bank', icon: Video },
     { id: 'pyq-papers', label: 'Complete PYQ Papers', icon: Award },
     { id: 'syllabus-map', label: '19-Subject Syllabus', icon: Compass },
     { id: 'learn', label: 'Smart Notes & Topics', icon: BookOpen },
@@ -123,6 +126,16 @@ export const Sidebar: React.FC = () => {
 
       {/* Bottom Profile & Toggle Footer */}
       <div className="p-3 border-t border-slate-800 space-y-1">
+        {currentUserEmail ? (
+          <div className="px-3 py-2 text-3xs text-slate-500 font-bold border-b border-slate-850 mb-1">
+            Logged in: <span className="text-teal-400 font-mono block truncate">{currentUserEmail}</span>
+          </div>
+        ) : (
+          <div className="px-3 py-2 text-3xs text-slate-500 font-bold border-b border-slate-850 mb-1">
+            Running as: <span className="text-amber-400 font-mono block">GUEST / OFFLINE</span>
+          </div>
+        )}
+
         <button
           onClick={toggleTheme}
           className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-800 hover:text-white text-xs font-semibold transition-all"
@@ -134,15 +147,33 @@ export const Sidebar: React.FC = () => {
           <span className="text-3xs bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">Toggle</span>
         </button>
 
+        {currentUserEmail ? (
+          <button
+            onClick={logoutUser}
+            className="w-full flex items-center space-x-2.5 px-3 py-2 rounded-xl hover:bg-rose-950/20 hover:text-rose-400 text-2xs font-semibold text-rose-400 transition-all"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Sign Out</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => setShowAuthModal(true)}
+            className="w-full flex items-center space-x-2.5 px-3 py-2 rounded-xl hover:bg-teal-950/20 hover:text-teal-400 text-2xs font-semibold text-teal-400 transition-all"
+          >
+            <LogOut className="w-3.5 h-3.5 rotate-180" />
+            <span>Sign In / Create Account</span>
+          </button>
+        )}
+
         <button
           onClick={resetProgress}
-          className="w-full flex items-center space-x-2.5 px-3 py-2 rounded-xl hover:bg-rose-950/20 hover:text-rose-400 text-2xs font-semibold text-rose-400/70 transition-all"
+          className="w-full flex items-center space-x-2.5 px-3 py-2 rounded-xl hover:bg-rose-950/10 hover:text-rose-400/80 text-3xs font-semibold text-rose-500/50 transition-all"
         >
-          <LogOut className="w-3.5 h-3.5" />
-          <span>Reset Platform</span>
+          <span>Reset Platform Data</span>
         </button>
       </div>
 
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </aside>
   );
 };

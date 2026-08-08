@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { LayoutDashboard, BookOpen, PenTool, Sparkles, Award, Menu, Video, Search, Flame } from 'lucide-react';
+import { LayoutDashboard, PenTool, Award, Flame } from 'lucide-react';
 
 export const MobileNav: React.FC = () => {
   const { activeTab, setActiveTab, profile } = useApp();
@@ -11,8 +11,6 @@ export const MobileNav: React.FC = () => {
 
   const mobileTabs = [
     { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
-    { id: 'resources', label: 'Resources', icon: Search },
-    { id: 'video-practice', label: 'Videos', icon: Video },
     { id: 'pyq-papers', label: 'Papers', icon: Award },
     { id: 'practice', label: 'Practice', icon: PenTool },
     { id: 'tests', label: 'Tests', icon: Flame }

@@ -7,7 +7,7 @@ import { QUESTIONS, SUBJECTS, TOPICS } from '../data/mockDb';
 import { 
   CheckCircle2, XCircle, Sparkles, ShieldCheck, PenTool, 
   RotateCcw, Award, ArrowRight, Zap, Filter, HelpCircle, 
-  BookOpen, Brain, Clock, ChevronRight, AlertTriangle 
+  BookOpen, Brain, Clock, ChevronRight, AlertTriangle, Play, Image as ImageIcon, FileVideo
 } from 'lucide-react';
 
 export interface PracticeArenaProps {
@@ -26,6 +26,7 @@ export const PracticeArena: React.FC<PracticeArenaProps> = ({ forceVideoMode = f
   const [questionCount, setQuestionCount] = useState<number>(10);
   const [examNameFilter, setExamNameFilter] = useState<string>('all');
   const [pyqYearFilter, setPyqYearFilter] = useState<string>('all');
+  const [questionTypeFilter, setQuestionTypeFilter] = useState<string>('all'); // 'all' | 'video' | 'image' | 'text'
 
   // Active Test Runtime State
   const [activeQuestions, setActiveQuestions] = useState<Question[]>([]);
@@ -45,9 +46,13 @@ export const PracticeArena: React.FC<PracticeArenaProps> = ({ forceVideoMode = f
       if (selectedDifficulty !== 'all' && q.difficulty !== selectedDifficulty) return false;
       if (examNameFilter !== 'all' && q.examName !== examNameFilter) return false;
       if (pyqYearFilter !== 'all' && q.pyqYear?.toString() !== pyqYearFilter) return false;
+      // Question type filter
+      if (questionTypeFilter === 'video' && q.type !== 'video') return false;
+      if (questionTypeFilter === 'image' && !(q.imageUrl || q.imagePath)) return false;
+      if (questionTypeFilter === 'text' && (q.type === 'video' || q.imageUrl || q.imagePath)) return false;
       return true;
     });
-  }, [practiceMode, selectedSubject, selectedDifficulty, examNameFilter, pyqYearFilter, forceVideoMode]);
+  }, [practiceMode, selectedSubject, selectedDifficulty, examNameFilter, pyqYearFilter, forceVideoMode, questionTypeFilter]);
 
   // Start a Quiz
   const startQuiz = (mode: 'custom_quiz' | 'daily_challenge' | 'verified_pyqs') => {
@@ -372,11 +377,26 @@ export const PracticeArena: React.FC<PracticeArenaProps> = ({ forceVideoMode = f
         {/* Question Body Card */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
           
-          {/* Source badge */}
-          <div className="flex items-center justify-between">
+          {/* Question Type Badge */}
+          <div className="flex items-center space-x-2">
+            {currentQ.type === 'video' && (
+              <span className="flex items-center space-x-1 text-2xs font-black px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                <FileVideo className="w-3.5 h-3.5" />
+                <span>VIDEO-BASED QUESTION</span>
+              </span>
+            )}
+            {(currentQ.imageUrl || currentQ.imagePath) && (
+              <span className="flex items-center space-x-1 text-2xs font-black px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>IMAGE-BASED QUESTION</span>
+              </span>
+            )}
             <span className="text-2xs font-black uppercase tracking-wider text-slate-400">
-              {currentQ.type.toUpperCase()} • {currentQ.difficulty.toUpperCase()} DIFFICULTY
+              {currentQ.type !== 'video' && !(currentQ as any).imageUrl ? `${currentQ.type.toUpperCase()} • ` : ''}{currentQ.difficulty.toUpperCase()} DIFFICULTY
             </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <div/>
             <span className={`text-2xs font-extrabold px-2.5 py-1 rounded-full ${
               currentQ.isVerifiedPyq 
                 ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20' 
@@ -387,12 +407,38 @@ export const PracticeArena: React.FC<PracticeArenaProps> = ({ forceVideoMode = f
           </div>
 
           <h2 className="text-base md:text-lg font-bold text-slate-900 dark:text-white leading-relaxed">
-            {currentQ.questionText}
+            {currentQ.questionText.includes('🎬 VIDEO SCENE:')
+              ? currentQ.questionText.split('\n\n').slice(1).join('\n\n').trim()
+              : currentQ.questionText}
           </h2>
 
-          {currentQ.videoUrl && (
-            <div className="w-full rounded-2xl overflow-hidden bg-black/5 border border-slate-200 dark:border-slate-700">
-              <video src={currentQ.videoUrl} controls className="w-full max-h-64 object-cover" />
+          {/* Video: Real player OR scene description card */}
+          {currentQ.videoUrl ? (
+            <div className="w-full rounded-2xl overflow-hidden bg-black border border-indigo-500/30">
+              <video src={currentQ.videoUrl} controls className="w-full max-h-72 object-cover" />
+            </div>
+          ) : currentQ.type === 'video' && currentQ.questionText.includes('🎬 VIDEO SCENE:') && (
+            <div className="w-full rounded-2xl bg-slate-950 border border-indigo-600/40 p-5 space-y-3">
+              <div className="flex items-center space-x-2 text-indigo-400 text-xs font-bold uppercase tracking-widest">
+                <FileVideo className="w-4 h-4" />
+                <span>Clinical Video Scenario</span>
+                <span className="ml-auto text-3xs bg-indigo-500/20 border border-indigo-500/30 px-2 py-0.5 rounded-full text-indigo-300">Video-Based Question</span>
+              </div>
+              <p className="text-sm leading-relaxed text-slate-200 font-medium">
+                {currentQ.questionText.split('\n\n')[0].replace('🎬 VIDEO SCENE:', '').trim()}
+              </p>
+              <p className="text-3xs text-slate-500 italic">Visualise this clinical scenario in real time and answer based on the described findings.</p>
+            </div>
+          )}
+
+          {/* Image-based question render */}
+          {(currentQ.imageUrl || currentQ.imagePath) && (
+            <div className="w-full rounded-2xl overflow-hidden border border-rose-500/20 bg-slate-100 dark:bg-slate-800">
+              <img src={(currentQ.imageUrl || currentQ.imagePath)} alt="Clinical image" className="w-full max-h-72 object-contain" />
+              <div className="px-4 py-2 bg-rose-500/10 border-t border-rose-500/20 flex items-center space-x-1.5 text-2xs font-bold text-rose-600 dark:text-rose-400">
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>Examine the clinical image and answer the question below</span>
+              </div>
             </div>
           )}
 
@@ -689,6 +735,21 @@ export const PracticeArena: React.FC<PracticeArenaProps> = ({ forceVideoMode = f
               {[2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014].map(y => (
                 <option key={y} value={y.toString()}>{y} Only</option>
               ))}
+            </select>
+          </div>
+
+          {/* Question Type Filter */}
+          <div>
+            <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Question Type</label>
+            <select
+              value={questionTypeFilter}
+              onChange={(e) => setQuestionTypeFilter(e.target.value)}
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-slate-900 dark:text-white outline-none"
+            >
+              <option value="all">All Types (Text + Video + Image)</option>
+              <option value="video">🎬 Video-Based Questions Only</option>
+              <option value="image">🖼️ Image-Based Questions Only</option>
+              <option value="text">📝 Text/Clinical MCQs Only</option>
             </select>
           </div>
 

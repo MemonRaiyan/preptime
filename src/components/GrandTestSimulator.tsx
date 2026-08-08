@@ -8,7 +8,7 @@ import {
   Award, Clock, CheckCircle2, XCircle, AlertCircle, 
   HelpCircle, ChevronRight, Bookmark, ArrowRight, 
   BarChart3, Brain, Sparkles, ShieldAlert, RotateCcw, 
-  TrendingUp, Compass, Flag 
+  TrendingUp, Compass, Flag, Trophy, Play, Image as ImageIcon, FileVideo
 } from 'lucide-react';
 
 export interface GrandTestSimulatorProps {
@@ -17,6 +17,9 @@ export interface GrandTestSimulatorProps {
 
 export const GrandTestSimulator: React.FC<GrandTestSimulatorProps> = ({ pyqArchiveMode = false }) => {
   const { recordGrandTestAttempt, gtAttempts, profile, navigateToTopic, setActiveTab, userGeneratedSimulators } = useApp();
+
+  // Leaderboard modal states
+  const [showLeaderboardType, setShowLeaderboardType] = useState<'daily' | 'weekly' | 'monthly' | null>(null);
 
   // Selected test or null for selection screen
   const [activeTest, setActiveTest] = useState<GrandTest | null>(null);
@@ -61,6 +64,130 @@ export const GrandTestSimulator: React.FC<GrandTestSimulatorProps> = ({ pyqArchi
     setIsTestRunning(true);
     setShowSubmitModal(false);
     setLatestAttempt(null);
+  };
+
+  const startDynamicTest = (type: 'daily' | 'weekly' | 'monthly') => {
+    const count = type === 'daily' ? 30 : type === 'weekly' ? 100 : 300;
+    const duration = type === 'daily' ? 30 : type === 'weekly' ? 100 : 300;
+    
+    // Hardship filter and selection
+    const easyQs = QUESTIONS.filter(q => q.difficulty === 'easy');
+    const mediumQs = QUESTIONS.filter(q => q.difficulty === 'medium');
+    const hardQs = QUESTIONS.filter(q => q.difficulty === 'hard' || q.difficulty === 'challenge');
+    
+    let selectedQs: Question[] = [];
+    
+    if (type === 'daily') {
+      // Balanced: 30% Easy, 50% Medium, 20% Hard
+      const eCount = Math.round(count * 0.3);
+      const mCount = Math.round(count * 0.5);
+      const hCount = count - eCount - mCount;
+      
+      selectedQs = [
+        ...easyQs.sort(() => 0.5 - Math.random()).slice(0, eCount),
+        ...mediumQs.sort(() => 0.5 - Math.random()).slice(0, mCount),
+        ...hardQs.sort(() => 0.5 - Math.random()).slice(0, hCount)
+      ];
+    } else if (type === 'weekly') {
+      // Elevated: 20% Easy, 40% Medium, 40% Hard
+      const eCount = Math.round(count * 0.2);
+      const mCount = Math.round(count * 0.4);
+      const hCount = count - eCount - mCount;
+      
+      selectedQs = [
+        ...easyQs.sort(() => 0.5 - Math.random()).slice(0, eCount),
+        ...mediumQs.sort(() => 0.5 - Math.random()).slice(0, mCount),
+        ...hardQs.sort(() => 0.5 - Math.random()).slice(0, hCount)
+      ];
+    } else {
+      // Monthly/Real FMGE Profile: 10% Easy, 35% Medium, 55% Hard/Challenge
+      const eCount = Math.round(count * 0.1);
+      const mCount = Math.round(count * 0.35);
+      const hCount = count - eCount - mCount;
+      
+      selectedQs = [
+        ...easyQs.sort(() => 0.5 - Math.random()).slice(0, eCount),
+        ...mediumQs.sort(() => 0.5 - Math.random()).slice(0, mCount),
+        ...hardQs.sort(() => 0.5 - Math.random()).slice(0, hCount)
+      ];
+    }
+    
+    selectedQs = selectedQs.sort(() => 0.5 - Math.random());
+    
+    // In case we don't have enough, fill from general questions pool
+    if (selectedQs.length < count) {
+      const remaining = count - selectedQs.length;
+      const ids = new Set(selectedQs.map(q => q.id));
+      const pool = QUESTIONS.filter(q => !ids.has(q.id));
+      selectedQs = [...selectedQs, ...pool.sort(() => 0.5 - Math.random()).slice(0, remaining)];
+    }
+
+    const dynamicTest: GrandTest = {
+      id: `dynamic_${type}_${Date.now()}`,
+      title: `${type.charAt(0).toUpperCase() + type.slice(1)} Challenge Exam (${count} Qs)`,
+      description: `Auto-generated ${type} simulation. Difficulty skewed towards high-yield clinical vignettes. Time limit: ${duration} minutes.`,
+      durationMinutes: duration,
+      questionCount: count,
+      subjectsIncluded: ['All 19 Subjects Included'],
+      isSimulation: true,
+      questions: selectedQs
+    };
+    
+    handleStartTest(dynamicTest);
+  };
+
+  const mockLeaderboards = {
+    daily: [
+      { name: 'Dr. Aditi Sharma', score: 28, percentage: 93.3, timeTaken: '18m 42s', avatarColor: 'from-amber-400 to-orange-500', badge: '1st Term Topper' },
+      { name: 'Dr. Rohan Verma', score: 27, percentage: 90.0, timeTaken: '20m 15s', avatarColor: 'from-teal-400 to-emerald-500', badge: 'Rapid Solver' },
+      { name: 'Dr. Vivek Malhotra', score: 26, percentage: 86.7, timeTaken: '21m 10s', avatarColor: 'from-indigo-400 to-purple-500', badge: 'High Yield Master' },
+      { name: 'Dr. Priya Sen', score: 25, percentage: 83.3, timeTaken: '19m 50s', avatarColor: 'from-pink-400 to-rose-500', badge: 'Clinical Ace' },
+      { name: 'Dr. Amit Yadav', score: 24, percentage: 80.0, timeTaken: '22m 30s', avatarColor: 'from-sky-400 to-blue-500', badge: 'Consistent' }
+    ],
+    weekly: [
+      { name: 'Dr. Rohan Verma', score: 91, percentage: 91.0, timeTaken: '78m 10s', avatarColor: 'from-teal-400 to-emerald-500', badge: 'Rapid Solver' },
+      { name: 'Dr. Aditi Sharma', score: 89, percentage: 89.0, timeTaken: '81m 45s', avatarColor: 'from-amber-400 to-orange-500', badge: '1st Term Topper' },
+      { name: 'Dr. Vivek Malhotra', score: 87, percentage: 87.0, timeTaken: '85m 02s', avatarColor: 'from-indigo-400 to-purple-500', badge: 'High Yield Master' },
+      { name: 'Dr. Anjali Gupta', score: 84, percentage: 84.0, timeTaken: '89m 12s', avatarColor: 'from-fuchsia-400 to-pink-500', badge: 'Pathology Wizard' },
+      { name: 'Dr. Priya Sen', score: 81, percentage: 81.0, timeTaken: '82m 40s', avatarColor: 'from-pink-400 to-rose-500', badge: 'Clinical Ace' }
+    ],
+    monthly: [
+      { name: 'Dr. Aditi Sharma', score: 265, percentage: 88.3, timeTaken: '245m 30s', avatarColor: 'from-amber-400 to-orange-500', badge: '1st Term Topper' },
+      { name: 'Dr. Rohan Verma', score: 258, percentage: 86.0, timeTaken: '252m 15s', avatarColor: 'from-teal-400 to-emerald-500', badge: 'Rapid Solver' },
+      { name: 'Dr. Vivek Malhotra', score: 251, percentage: 83.7, timeTaken: '260m 50s', avatarColor: 'from-indigo-400 to-purple-500', badge: 'High Yield Master' },
+      { name: 'Dr. Sandeep Nair', score: 243, percentage: 81.0, timeTaken: '249m 10s', avatarColor: 'from-cyan-400 to-blue-500', badge: 'Pharmacology Geek' },
+      { name: 'Dr. Anjali Gupta', score: 238, percentage: 79.3, timeTaken: '268m 20s', avatarColor: 'from-fuchsia-400 to-pink-500', badge: 'Pathology Wizard' }
+    ]
+  };
+
+  const getLeaderboardData = (type: 'daily' | 'weekly' | 'monthly') => {
+    const list = [...mockLeaderboards[type]] as any[];
+    const count = type === 'daily' ? 30 : type === 'weekly' ? 100 : 300;
+    
+    const userAttemptsForType = gtAttempts.filter(att => att.totalQuestions === count);
+    if (userAttemptsForType.length > 0) {
+      const bestAttempt = [...userAttemptsForType].sort((a, b) => b.score - a.score)[0];
+      const userEntry = {
+        name: `Dr. ${profile?.name || 'You'} (You)`,
+        score: bestAttempt.score,
+        percentage: bestAttempt.percentage,
+        timeTaken: `${Math.floor(bestAttempt.timeSpentSeconds / 60)}m ${bestAttempt.timeSpentSeconds % 60}s`,
+        avatarColor: 'from-teal-500 to-indigo-600',
+        badge: 'Candidate Rank',
+        isCurrentUser: true
+      };
+      list.push(userEntry);
+    }
+    
+    const sorted = list.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.name.localeCompare(b.name);
+    });
+    
+    return sorted.map((entry, idx) => ({
+      ...entry,
+      rank: idx + 1
+    }));
   };
 
   const currentQ = activeTest?.questions[currentQuestionIndex];
@@ -409,14 +536,32 @@ export const GrandTestSimulator: React.FC<GrandTestSimulatorProps> = ({ pyqArchi
 
               {/* Question Text */}
               <h2 className="text-base md:text-lg font-bold text-slate-900 dark:text-white leading-relaxed">
-                {currentQ.questionText}
+                {currentQ.questionText.includes('🎬 VIDEO SCENE:')
+                  ? currentQ.questionText.split('\n\n').slice(1).join('\n\n').trim()
+                  : currentQ.questionText}
               </h2>
 
-              {currentQ.videoUrl && (
+              {currentQ.videoUrl ? (
                 <div className="w-full rounded-2xl overflow-hidden bg-black/5 border border-slate-200 dark:border-slate-700">
                   <video src={currentQ.videoUrl} controls className="w-full max-h-64 object-cover" />
                 </div>
+              ) : currentQ.type === 'video' && (
+                <div className="w-full rounded-2xl bg-slate-900 border border-indigo-600/40 p-5 space-y-3">
+                  <div className="flex items-center space-x-2 text-indigo-400 text-xs font-bold uppercase tracking-widest">
+                    <span className="text-base">🎬</span>
+                    <span>Clinical Video Scenario</span>
+                    <span className="ml-auto text-3xs bg-indigo-500/20 border border-indigo-500/30 px-2 py-0.5 rounded-full text-indigo-300">Video-Based Question</span>
+                  </div>
+                  <p className="text-sm leading-relaxed text-slate-200 font-medium whitespace-pre-line">
+                    {/* Extract just the scene description from the question text if embedded, or show generic cue */}
+                    {currentQ.questionText.includes('🎬 VIDEO SCENE:') 
+                      ? currentQ.questionText.split('\n\n')[0].replace('🎬 VIDEO SCENE:', '').trim()
+                      : 'Observe the clinical findings described. Apply your knowledge of the visual signs to answer the question below.'}
+                  </p>
+                  <div className="text-3xs text-slate-400 italic">Imagine you are watching this clinical scenario in real time. Answer based on what is described.</div>
+                </div>
               )}
+
 
               {/* 4 Interactive Options */}
               <div className="space-y-3">
@@ -611,41 +756,152 @@ export const GrandTestSimulator: React.FC<GrandTestSimulatorProps> = ({ pyqArchi
         </div>
       </div>
 
-      {/* Available Grand Tests Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {([...userGeneratedSimulators, ...GRAND_TESTS]).filter(t => pyqArchiveMode ? t.id.includes('gt_fmge') || t.id.includes('gt_neetpg') || t.id.includes('gt_inicet') || t.id.includes('user_gt_') : !t.id.includes('gt_fmge') && !t.id.includes('gt_neetpg') && !t.id.includes('gt_inicet') && !t.id.includes('user_gt_')).map((test) => (
-          <div
-            key={test.id}
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-teal-500 transition-all flex flex-col justify-between space-y-6 group"
-          >
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-2xs font-extrabold px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400">
-                  {test.questionCount} Questions
-                </span>
-                <span className="text-2xs text-slate-400 font-mono font-bold">
-                  {test.durationMinutes} Mins
-                </span>
+      {/* Dynamic Challenges Section */}
+      {!pyqArchiveMode && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center space-x-2">
+            <Sparkles className="w-5 h-5 text-teal-500" />
+            <span>Dynamic Performance Challenges (Every Time New Questions & Hardship)</span>
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            {/* Daily Challenge */}
+            <div className="bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-850 border border-slate-200 dark:border-slate-850 rounded-3xl p-6 shadow-sm flex flex-col justify-between space-y-6 hover:shadow-lg transition-all border-l-4 border-l-teal-500">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-2xs font-extrabold px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400">
+                    30 Questions
+                  </span>
+                  <span className="text-2xs text-slate-400 font-bold">30 Mins</span>
+                </div>
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Daily Rapid Test</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Ideal for maintaining daily streaks. Hardness: Balanced. Randomly generated.
+                </p>
               </div>
-
-              <h3 className="font-bold text-lg text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors">
-                {test.title}
-              </h3>
-
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                {test.description}
-              </p>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => startDynamicTest('daily')}
+                  className="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-2.5 rounded-xl text-xs font-bold transition-all"
+                >
+                  Start Test
+                </button>
+                <button
+                  onClick={() => setShowLeaderboardType('daily')}
+                  className="px-3 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-750 transition-all flex items-center justify-center"
+                  title="View Leaderboard"
+                >
+                  <Trophy className="w-4 h-4 text-amber-500" />
+                </button>
+              </div>
             </div>
 
-            <button
-              onClick={() => handleStartTest(test)}
-              className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-2xl text-xs font-bold shadow-md shadow-teal-600/10 transition-all flex items-center justify-center space-x-2"
-            >
-              <span>Start Simulation</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            {/* Weekly Challenge */}
+            <div className="bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-850 border border-slate-200 dark:border-slate-850 rounded-3xl p-6 shadow-sm flex flex-col justify-between space-y-6 hover:shadow-lg transition-all border-l-4 border-l-indigo-500">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-2xs font-extrabold px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                    100 Questions
+                  </span>
+                  <span className="text-2xs text-slate-400 font-bold">100 Mins</span>
+                </div>
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Weekly Mid-Mock</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Elevated challenge focusing on clinical reasoning. 40% Hard/Challenge questions.
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => startDynamicTest('weekly')}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-xs font-bold transition-all"
+                >
+                  Start Test
+                </button>
+                <button
+                  onClick={() => setShowLeaderboardType('weekly')}
+                  className="px-3 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-750 transition-all flex items-center justify-center animate-pulse"
+                  title="View Leaderboard"
+                >
+                  <Trophy className="w-4 h-4 text-amber-500" />
+                </button>
+              </div>
+            </div>
+
+            {/* Monthly Challenge */}
+            <div className="bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-850 border border-slate-200 dark:border-slate-850 rounded-3xl p-6 shadow-sm flex flex-col justify-between space-y-6 hover:shadow-lg transition-all border-l-4 border-l-purple-500">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-2xs font-extrabold px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                    300 Questions
+                  </span>
+                  <span className="text-2xs text-slate-400 font-bold">300 Mins</span>
+                </div>
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Monthly Marathon</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Matches real FMGE hardship. Strict timing. 55% Hard/Challenge clinical vignettes.
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => startDynamicTest('monthly')}
+                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2.5 rounded-xl text-xs font-bold transition-all"
+                >
+                  Start Simulation
+                </button>
+                <button
+                  onClick={() => setShowLeaderboardType('monthly')}
+                  className="px-3 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-750 transition-all flex items-center justify-center"
+                  title="View Leaderboard"
+                >
+                  <Trophy className="w-4 h-4 text-amber-500" />
+                </button>
+              </div>
+            </div>
+
           </div>
-        ))}
+        </div>
+      )}
+
+      {/* Available Grand Tests Grid */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-black text-slate-900 dark:text-white">
+          {pyqArchiveMode ? 'Official NBEMS PYQ Papers & Custom Upload Simulators' : 'Practice Mini-Mock Exams'}
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {([...userGeneratedSimulators, ...GRAND_TESTS]).filter(t => pyqArchiveMode ? t.id.includes('gt_fmge') || t.id.includes('gt_neetpg') || t.id.includes('gt_inicet') || t.id.includes('user_gt_') : !t.id.includes('gt_fmge') && !t.id.includes('gt_neetpg') && !t.id.includes('gt_inicet') && !t.id.includes('user_gt_')).map((test) => (
+            <div
+              key={test.id}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-teal-500 transition-all flex flex-col justify-between space-y-6 group"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-2xs font-extrabold px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400">
+                    {test.questionCount} Questions
+                  </span>
+                  <span className="text-2xs text-slate-400 font-mono font-bold">
+                    {test.durationMinutes} Mins
+                  </span>
+                </div>
+
+                <h3 className="font-bold text-lg text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors">
+                  {test.title}
+                </h3>
+
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  {test.description}
+                </p>
+              </div>
+
+              <button
+                onClick={() => handleStartTest(test)}
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-2xl text-xs font-bold shadow-md shadow-teal-600/10 transition-all flex items-center justify-center space-x-2"
+              >
+                <span>Start Simulation</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Previous Test Attempts & Score Trend History */}
@@ -683,6 +939,86 @@ export const GrandTestSimulator: React.FC<GrandTestSimulatorProps> = ({ pyqArchi
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Leaderboard Modal */}
+      {showLeaderboardType && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-950 border border-slate-250 dark:border-slate-800 rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[85vh] animate-scale-up">
+            
+            {/* Header */}
+            <div className="p-6 border-b border-slate-200 dark:border-slate-850 flex items-center justify-between bg-slate-50 dark:bg-slate-900">
+              <div className="flex items-center space-x-3">
+                <Trophy className="w-7 h-7 text-amber-500 animate-bounce" />
+                <div>
+                  <h3 className="font-black text-base text-slate-900 dark:text-white capitalize">
+                    {showLeaderboardType} Challenge Leaderboard
+                  </h3>
+                  <p className="text-3xs text-slate-500 dark:text-slate-400">Ranks are updated in real-time as candidates finish tests.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowLeaderboardType(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-xl transition-all"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* List */}
+            <div className="p-6 overflow-y-auto space-y-2">
+              {getLeaderboardData(showLeaderboardType).map((entry) => (
+                <div
+                  key={entry.name}
+                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all ${
+                    entry.isCurrentUser
+                      ? 'bg-teal-500/10 border-teal-500/30 ring-1 ring-teal-500/20'
+                      : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-850'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <span className={`w-6 h-6 rounded-lg flex items-center justify-center font-black text-2xs ${
+                      entry.rank === 1 ? 'bg-amber-500 text-white shadow-sm' :
+                      entry.rank === 2 ? 'bg-slate-350 text-slate-850' :
+                      entry.rank === 3 ? 'bg-amber-600 text-white' :
+                      'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                    }`}>
+                      {entry.rank}
+                    </span>
+
+                    <div className={`w-8 h-8 rounded-full bg-gradient-to-tr ${entry.avatarColor} flex items-center justify-center text-white font-extrabold text-xs shadow-sm`}>
+                      {entry.name.replace('Dr. ', '').substring(0, 1)}
+                    </div>
+
+                    <div>
+                      <span className={`text-xs font-extrabold block ${entry.isCurrentUser ? 'text-teal-600 dark:text-teal-400' : 'text-slate-900 dark:text-white'}`}>
+                        {entry.name}
+                      </span>
+                      <span className="text-4xs font-mono px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 inline-block">
+                        {entry.badge}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-xs font-black text-slate-900 dark:text-white block">
+                      {entry.score} Marks
+                    </span>
+                    <span className="text-3xs text-slate-400 font-mono">
+                      {entry.percentage}% • {entry.timeTaken}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-850 text-center text-3xs text-slate-500">
+              Only candidates who complete the simulation with a valid score appear here.
+            </div>
+
           </div>
         </div>
       )}

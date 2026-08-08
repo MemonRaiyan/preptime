@@ -160,6 +160,7 @@ export interface Question {
   memoryTrick?: string;
   isAiGenerated: boolean;
   imagePath?: string; // Optional path/URL for image questions
+  imageUrl?: string; // Alias for imagePath — explicit URL for image-based questions
   videoUrl?: string; // Optional path/URL for video questions
   source?: string; // e.g. "FMGE Dec 2023 Official PYQ" or "FMGE-style AI Question"
   isVerifiedPyq: boolean;
