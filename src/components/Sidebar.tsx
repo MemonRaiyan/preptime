@@ -5,7 +5,7 @@ import { useApp } from '../context/AppContext';
 import { 
   LayoutDashboard, Calendar, BookOpen, PenTool, Brain, AlertTriangle, 
   Award, Sparkles, Stethoscope, Image as ImageIcon, RotateCcw, Clock, 
-  Users, ShieldAlert, LogOut, Sun, Moon, Search, Compass, HelpCircle, BarChart3, Flame, Globe
+  Users, ShieldAlert, LogOut, Sun, Moon, Search, Compass, HelpCircle, BarChart3, Flame, Globe, User
 } from 'lucide-react';
 import { AuthModal } from './AuthModal';
 
@@ -33,7 +33,7 @@ export const Sidebar: React.FC = () => {
   const clinicalSpecialtyNavItems = [
     { id: 'clinical-cases', label: 'Clinical Cases', icon: Stethoscope },
     { id: 'image-bank', label: 'Image Bank Spotters', icon: ImageIcon },
-    { id: 'resources', label: 'Free Resource Hub', icon: Globe },
+    { id: 'profile', label: 'Profile & Sync', icon: User },
     { id: 'revision', label: 'Rapid Revision & Traps', icon: RotateCcw },
     { id: 'pomodoro', label: 'Focus Room Timer', icon: Clock },
     { id: 'planner', label: 'Adaptive Study Plan', icon: Calendar },

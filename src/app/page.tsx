@@ -9,7 +9,7 @@ import { MobileNav } from '../components/MobileNav';
 import { GlobalSearchModal } from '../components/GlobalSearchModal';
 
 import { Dashboard } from '../components/Dashboard';
-import { FreeResourceHub } from '../components/FreeResourceHub';
+import { ProfileView } from '../components/ProfileView';
 import { SyllabusMapView } from '../components/SyllabusMapView';
 import { SmartNotesView } from '../components/SmartNotesView';
 import { PracticeArena } from '../components/PracticeArena';
@@ -77,8 +77,8 @@ export default function Home() {
         return <ClinicalCasesView />;
       case 'image-bank':
         return <ImageBankView />;
-      case 'resources':
-        return <FreeResourceHub />;
+      case 'profile':
+        return <ProfileView />;
       case 'revision':
         return <SpecialRevisionView />;
       case 'pomodoro':
