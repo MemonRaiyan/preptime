@@ -11,7 +11,11 @@ import {
   TrendingUp, Compass, Flag 
 } from 'lucide-react';
 
-export const GrandTestSimulator: React.FC = () => {
+export interface GrandTestSimulatorProps {
+  pyqArchiveMode?: boolean;
+}
+
+export const GrandTestSimulator: React.FC<GrandTestSimulatorProps> = ({ pyqArchiveMode = false }) => {
   const { recordGrandTestAttempt, gtAttempts, profile, navigateToTopic, setActiveTab } = useApp();
 
   // Selected test or null for selection screen
@@ -609,7 +613,7 @@ export const GrandTestSimulator: React.FC = () => {
 
       {/* Available Grand Tests Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {GRAND_TESTS.map((test) => (
+        {GRAND_TESTS.filter(t => pyqArchiveMode ? t.id.includes('gt_fmge') || t.id.includes('gt_neetpg') || t.id.includes('gt_inicet') : !t.id.includes('gt_fmge') && !t.id.includes('gt_neetpg') && !t.id.includes('gt_inicet')).map((test) => (
           <div
             key={test.id}
             className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-teal-500 transition-all flex flex-col justify-between space-y-6 group"

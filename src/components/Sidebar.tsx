@@ -5,7 +5,7 @@ import { useApp } from '../context/AppContext';
 import { 
   LayoutDashboard, Calendar, BookOpen, PenTool, Brain, AlertTriangle, 
   Award, Sparkles, Stethoscope, Image as ImageIcon, RotateCcw, Clock, 
-  Users, ShieldAlert, LogOut, Sun, Moon, Search, Video, Compass, HelpCircle, BarChart3
+  Users, ShieldAlert, LogOut, Sun, Moon, Search, Video, Compass, HelpCircle, BarChart3, Flame
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -15,14 +15,16 @@ export const Sidebar: React.FC = () => {
 
   const mainNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'resources', label: 'Free Resource Hub', icon: Video },
+    { id: 'resources', label: 'Free Resource Hub', icon: Search },
+    { id: 'video-practice', label: 'Video Question Bank', icon: Video },
+    { id: 'pyq-papers', label: 'Complete PYQ Papers', icon: Award },
     { id: 'syllabus-map', label: '19-Subject Syllabus', icon: Compass },
     { id: 'learn', label: 'Smart Notes & Topics', icon: BookOpen },
     { id: 'practice', label: 'Practice & PYQ Arena', icon: PenTool },
     { id: 'ai-tutor', label: 'AI FMGE Teacher', icon: Sparkles },
     { id: 'flashcards', label: 'Spaced Flashcards', icon: Brain },
     { id: 'mistakes', label: 'Mistake Notebook', icon: AlertTriangle },
-    { id: 'tests', label: 'Grand Test Series', icon: Award }
+    { id: 'tests', label: 'Grand Test Series', icon: Flame }
   ];
 
   const clinicalSpecialtyNavItems = [

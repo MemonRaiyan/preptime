@@ -10,7 +10,11 @@ import {
   BookOpen, Brain, Clock, ChevronRight, AlertTriangle 
 } from 'lucide-react';
 
-export const PracticeArena: React.FC = () => {
+export interface PracticeArenaProps {
+  forceVideoMode?: boolean;
+}
+
+export const PracticeArena: React.FC<PracticeArenaProps> = ({ forceVideoMode = false }) => {
   const { addAttempt, categorizeMistake, attempts, profile, navigateToTopic } = useApp();
 
   // Mode Selection: 'custom_quiz' | 'daily_challenge' | 'verified_pyqs' | 'active_test'
@@ -35,6 +39,7 @@ export const PracticeArena: React.FC = () => {
   // Filtered pool of questions
   const availableQuestions = useMemo(() => {
     return QUESTIONS.filter(q => {
+      if (forceVideoMode && q.type !== 'video') return false;
       if (practiceMode === 'verified_pyqs' && !q.isVerifiedPyq) return false;
       if (selectedSubject !== 'all' && q.subjectId !== selectedSubject) return false;
       if (selectedDifficulty !== 'all' && q.difficulty !== selectedDifficulty) return false;
@@ -42,7 +47,7 @@ export const PracticeArena: React.FC = () => {
       if (pyqYearFilter !== 'all' && q.pyqYear?.toString() !== pyqYearFilter) return false;
       return true;
     });
-  }, [practiceMode, selectedSubject, selectedDifficulty, examNameFilter, pyqYearFilter]);
+  }, [practiceMode, selectedSubject, selectedDifficulty, examNameFilter, pyqYearFilter, forceVideoMode]);
 
   // Start a Quiz
   const startQuiz = (mode: 'custom_quiz' | 'daily_challenge' | 'verified_pyqs') => {
@@ -649,6 +654,11 @@ export const PracticeArena: React.FC = () => {
               <option value={10}>10 Questions</option>
               <option value={20}>20 Questions (Standard)</option>
               <option value={50}>50 Questions (Mini Block)</option>
+              <option value={100}>100 Questions (Half Mock)</option>
+              <option value={200}>200 Questions (Full Paper)</option>
+              <option value={300}>300 Questions (FMGE Standard)</option>
+              <option value={500}>500 Questions (Marathon)</option>
+              <option value={1000}>1000 Questions (Ultimate Simulation)</option>
             </select>
           </div>
 

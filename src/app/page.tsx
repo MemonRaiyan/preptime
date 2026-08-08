@@ -27,6 +27,8 @@ import { ExamInfoHub } from '../components/ExamInfoHub';
 import { CommunityView } from '../components/CommunityView';
 import { AdminPanel } from '../components/AdminPanel';
 import { AnalyticsView } from '../components/AnalyticsView';
+import { VideoPracticeView } from '../components/VideoPracticeView';
+import { PYQPapersView } from '../components/PYQPapersView';
 
 import { Search, Flame } from 'lucide-react';
 
@@ -57,6 +59,10 @@ export default function Home() {
         return <Dashboard />;
       case 'resources':
         return <FreeResourceHub />;
+      case 'video-practice':
+        return <VideoPracticeView />;
+      case 'pyq-papers':
+        return <PYQPapersView />;
       case 'syllabus-map':
         return <SyllabusMapView />;
       case 'learn':

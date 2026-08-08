@@ -11,11 +11,10 @@ const EXAMS = ['FMGE', 'NEET PG', 'INI-CET'];
 const VIDEO_PLACEHOLDER = 'https://www.w3schools.com/html/mov_bbb.mp4'; // Placeholder video that plays in HTML5
 
 const videoTopics = [
-  { text: 'A 45-year-old male presents with the gait shown in the video. What is the most likely diagnosis?', options: ['Parkinson\'s Disease (Festinating Gait)', 'Cerebellar Ataxia', 'Sensory Ataxia', 'Spastic Hemiparesis'], correct: 0, pearl: 'Festinating gait is characterized by short, shuffling steps and a stooped posture.' },
-  { text: 'Watch the video of this patient\'s eye movements. What type of nystagmus is demonstrated?', options: ['Downbeat nystagmus', 'Upbeat nystagmus', 'Pendular nystagmus', 'See-saw nystagmus'], correct: 0, pearl: 'Downbeat nystagmus localizes to the cervicomedullary junction (e.g. Arnold-Chiari malformation).' },
-  { text: 'The video demonstrates a specific clinical test for the knee. Which ligament is being tested?', options: ['Anterior Cruciate Ligament (Lachman Test)', 'Posterior Cruciate Ligament', 'Medial Collateral Ligament', 'Lateral Collateral Ligament'], correct: 0, pearl: 'Lachman test is the most sensitive test for ACL tear.' },
-  { text: 'A child is having the episode shown in the video. The EEG shows 3Hz spike and wave discharges. Diagnosis?', options: ['Absence Seizure', 'Complex Partial Seizure', 'Myoclonic Seizure', 'Atonic Seizure'], correct: 0, pearl: 'Absence seizures present with staring spells and 3Hz spike/wave. First-line is Ethosuximide.' },
-  { text: 'This video clip shows a patient performing the Dix-Hallpike maneuver. What does the resulting nystagmus suggest?', options: ['BPPV (Posterior Semicircular Canal)', 'Meniere\'s Disease', 'Vestibular Neuritis', 'Central Vertigo'], correct: 0, pearl: 'Upbeating and torsional nystagmus during Dix-Hallpike indicates posterior canal BPPV.' }
+  { text: 'A 45-year-old male presents with the gait shown in the video. What is the most likely diagnosis?', options: ['Parkinson\'s Disease (Festinating Gait)', 'Cerebellar Ataxia', 'Sensory Ataxia', 'Spastic Hemiparesis'], correct: 0, pearl: 'Festinating gait is characterized by short, shuffling steps and a stooped posture.', url: 'https://upload.wikimedia.org/wikipedia/commons/b/b3/Optokinetic_nystagmus.webm' },
+  { text: 'Watch the video of this patient\'s eye movements. What type of nystagmus is demonstrated?', options: ['Downbeat nystagmus', 'Upbeat nystagmus', 'Pendular nystagmus', 'See-saw nystagmus'], correct: 0, pearl: 'Downbeat nystagmus localizes to the cervicomedullary junction.', url: 'https://upload.wikimedia.org/wikipedia/commons/b/b3/Optokinetic_nystagmus.webm' },
+  { text: 'A child is having the episode shown in the video. The EEG shows 3Hz spike and wave discharges. Diagnosis?', options: ['Absence Seizure', 'Complex Partial Seizure', 'Myoclonic Seizure', 'Atonic Seizure'], correct: 0, pearl: 'Absence seizures present with staring spells and 3Hz spike/wave.', url: 'https://upload.wikimedia.org/wikipedia/commons/3/30/Generalized_tonic-clonic_seizure.webm' },
+  { text: 'This video clip shows a patient performing the Dix-Hallpike maneuver. What does the resulting nystagmus suggest?', options: ['BPPV (Posterior Semicircular Canal)', 'Meniere\'s Disease', 'Vestibular Neuritis', 'Central Vertigo'], correct: 0, pearl: 'Upbeating and torsional nystagmus during Dix-Hallpike indicates posterior canal BPPV.', url: 'https://upload.wikimedia.org/wikipedia/commons/b/b3/Optokinetic_nystagmus.webm' }
 ];
 
 const resourceTopics = ['Harrison\'s Internal Medicine Summary', 'Robbins Pathology High-Yield PDF', 'Park\'s PSM MCQs', 'Gray\'s Anatomy Video Dissection', 'Pharmacology Rapid Revision Cheat Sheet', 'Obstetrics Case Discussions'];
@@ -38,7 +37,7 @@ function generateQuestions() {
       type: 'video',
       difficulty: 'hard',
       questionText: `[VIDEO SCENARIO ${i+1}] ${template.text}`,
-      videoUrl: VIDEO_PLACEHOLDER,
+      videoUrl: template.url,
       options: template.options,
       correctAnswerIndex: template.correct,
       explanation: `Detailed explanation for video scenario ${i+1}. The visual finding is characteristic of the correct answer.`,
@@ -94,11 +93,15 @@ function generateResources() {
     const type = resourceTypes[Math.floor(Math.random() * resourceTypes.length)];
     const name = resourceTopics[Math.floor(Math.random() * resourceTopics.length)];
 
+    let url = 'https://www.ncbi.nlm.nih.gov/pmc/';
+    if (type === 'VIDEO') url = 'https://www.youtube.com/@osmosis';
+    if (type === 'GUIDELINE') url = 'https://www.who.int/publications/i';
+
     resources.push({
       id: `res_gen_${i}`,
       title: `${subj.toUpperCase()} - ${name} Vol ${Math.floor(Math.random() * 5) + 1}`,
       description: `Comprehensive ${type.toLowerCase()} material covering high-yield topics for ${subj}. Essential for FMGE and NEET PG preparation.`,
-      url: type === 'VIDEO' ? VIDEO_PLACEHOLDER : 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+      url: url,
       source: 'Global Medical Archives',
       sourceType: type,
       subjectId: subj,
