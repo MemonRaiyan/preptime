@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { OFFICIAL_EXAM_INFO, SUBJECTS } from '../data/mockDb';
 import { 
   Building2, ExternalLink, ShieldCheck, FileText, CheckCircle2, 
@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 export const ExamInfoHub: React.FC = () => {
+  const [linkTab, setLinkTab] = useState<'fmge' | 'neetpg' | 'ncert' | 'other'>('fmge');
   return (
     <div className="space-y-8 animate-fade-in pb-16">
       
@@ -151,6 +152,414 @@ export const ExamInfoHub: React.FC = () => {
         </div>
       </div>
 
+      {/* DoorstepTutor, ExamRace, FlexiPrep & ExamPyq Reference Hub */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+          <div>
+            <span className="text-2xs font-extrabold text-teal-600 dark:text-teal-400 uppercase tracking-wider block">
+              Partner Study resources
+            </span>
+            <h3 className="font-black text-lg text-slate-900 dark:text-white mt-0.5">
+              Verified External Portals & Reference Hub
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-0.5">
+              Explore chapter-wise guides, books recommendations, NCERT libraries, and past papers archives.
+            </p>
+          </div>
+
+          {/* Quick tab switcher */}
+          <div className="flex flex-wrap gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl text-2xs font-bold shrink-0 self-start md:self-center">
+            <button
+              onClick={() => setLinkTab('fmge')}
+              className={`px-3 py-1.5 rounded-xl transition-all ${
+                linkTab === 'fmge' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-black' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-355'
+              }`}
+            >
+              FMGE Portal
+            </button>
+            <button
+              onClick={() => setLinkTab('neetpg')}
+              className={`px-3 py-1.5 rounded-xl transition-all ${
+                linkTab === 'neetpg' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-black' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-355'
+              }`}
+            >
+              NEET-PG & Med Sci
+            </button>
+            <button
+              onClick={() => setLinkTab('ncert')}
+              className={`px-3 py-1.5 rounded-xl transition-all ${
+                linkTab === 'ncert' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-black' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-355'
+              }`}
+            >
+              NCERT / NIOS (School)
+            </button>
+            <button
+              onClick={() => setLinkTab('other')}
+              className={`px-3 py-1.5 rounded-xl transition-all ${
+                linkTab === 'other' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm font-black' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-355'
+              }`}
+            >
+              Other Exams
+            </button>
+          </div>
+        </div>
+
+        {/* Tab 1: FMGE Links */}
+        {linkTab === 'fmge' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs animate-fade-in">
+            <a
+              href="https://www.doorsteptutor.com/Exams/FMGE/Part-A/Questions/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-750 hover:border-teal-500 transition-all flex flex-col justify-between space-y-2 group"
+            >
+              <div className="space-y-1">
+                <span className="font-bold text-slate-955 dark:text-white block group-hover:text-teal-600 transition-colors">
+                  DoorstepTutor FMGE Part-A Questions
+                </span>
+                <span className="text-3xs text-slate-400 block font-mono">www.doorsteptutor.com</span>
+                <p className="text-slate-500 dark:text-slate-450 leading-normal text-3xs">
+                  Browse chapter-wise questions, solutions, and notes covering pre-clinical and para-clinical topics.
+                </p>
+              </div>
+              <div className="flex items-center space-x-1 text-teal-600 dark:text-teal-400 font-extrabold text-3xs pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
+                <span>Open Question Bank</span>
+                <ExternalLink className="w-3 h-3" />
+              </div>
+            </a>
+
+            <a
+              href="https://www.examrace.com/FMGE/FMGE-Past-Papers/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-750 hover:border-teal-500 transition-all flex flex-col justify-between space-y-2 group"
+            >
+              <div className="space-y-1">
+                <span className="font-bold text-slate-955 dark:text-white block group-hover:text-teal-600 transition-colors">
+                  ExamRace FMGE Past Papers Archive
+                </span>
+                <span className="text-3xs text-slate-400 block font-mono">www.examrace.com</span>
+                <p className="text-slate-500 dark:text-slate-455 leading-normal text-3xs">
+                  Access memory-based question papers, answers, and explanations spanning previous exam years.
+                </p>
+              </div>
+              <div className="flex items-center space-x-1 text-teal-600 dark:text-teal-400 font-extrabold text-3xs pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
+                <span>Open Past Papers</span>
+                <ExternalLink className="w-3 h-3" />
+              </div>
+            </a>
+
+            <a
+              href="https://www.examrace.com/FMGE/FMGE-Practice-Questions/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-750 hover:border-teal-500 transition-all flex flex-col justify-between space-y-2 group"
+            >
+              <div className="space-y-1">
+                <span className="font-bold text-slate-955 dark:text-white block group-hover:text-teal-600 transition-colors">
+                  ExamRace FMGE Practice Questions
+                </span>
+                <span className="text-3xs text-slate-400 block font-mono">www.examrace.com</span>
+                <p className="text-slate-500 dark:text-slate-455 leading-normal text-3xs">
+                  Solved mock practice sets and revision tests to assess subject-wise readiness.
+                </p>
+              </div>
+              <div className="flex items-center space-x-1 text-teal-600 dark:text-teal-400 font-extrabold text-3xs pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
+                <span>Open Practice Sets</span>
+                <ExternalLink className="w-3 h-3" />
+              </div>
+            </a>
+
+            <a
+              href="https://www.examrace.com/FMGE/FMGE-Book-List/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-750 hover:border-teal-500 transition-all flex flex-col justify-between space-y-2 group"
+            >
+              <div className="space-y-1">
+                <span className="font-bold text-slate-955 dark:text-white block group-hover:text-teal-600 transition-colors">
+                  ExamRace Recommended FMGE Book List
+                </span>
+                <span className="text-3xs text-slate-400 block font-mono">www.examrace.com</span>
+                <p className="text-slate-500 dark:text-slate-455 leading-normal text-3xs">
+                  Essential reference books, standard guidebooks, and syllabus recommended readings.
+                </p>
+              </div>
+              <div className="flex items-center space-x-1 text-teal-600 dark:text-teal-400 font-extrabold text-3xs pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
+                <span>Open Book List</span>
+                <ExternalLink className="w-3 h-3" />
+              </div>
+            </a>
+
+            <a
+              href="https://www.examrace.com/FMGE/FMGE-Scheme/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-750 hover:border-teal-500 transition-all flex flex-col justify-between space-y-2 group"
+            >
+              <div className="space-y-1">
+                <span className="font-bold text-slate-955 dark:text-white block group-hover:text-teal-600 transition-colors">
+                  ExamRace FMGE Scheme of Exam
+                </span>
+                <span className="text-3xs text-slate-400 block font-mono">www.examrace.com</span>
+                <p className="text-slate-500 dark:text-slate-455 leading-normal text-3xs">
+                  Official marks structure, duration, division of parts, passing guidelines, and criteria.
+                </p>
+              </div>
+              <div className="flex items-center space-x-1 text-teal-600 dark:text-teal-400 font-extrabold text-3xs pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
+                <span>Open Exam Scheme</span>
+                <ExternalLink className="w-3 h-3" />
+              </div>
+            </a>
+
+            <a
+              href="https://www.examrace.com/FMGE/FMGE-Syllabus/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-750 hover:border-teal-500 transition-all flex flex-col justify-between space-y-2 group"
+            >
+              <div className="space-y-1">
+                <span className="font-bold text-slate-955 dark:text-white block group-hover:text-teal-600 transition-colors">
+                  ExamRace FMGE Syllabus Blueprint
+                </span>
+                <span className="text-3xs text-slate-400 block font-mono">www.examrace.com</span>
+                <p className="text-slate-500 dark:text-slate-455 leading-normal text-3xs">
+                  Full 19-subject syllabus topics breakdown, systems lists, and marks distributions.
+                </p>
+              </div>
+              <div className="flex items-center space-x-1 text-teal-600 dark:text-teal-400 font-extrabold text-3xs pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
+                <span>Open Syllabus Guide</span>
+                <ExternalLink className="w-3 h-3" />
+              </div>
+            </a>
+          </div>
+        )}
+
+        {/* Tab 2: NEET-PG & Medical Science Links */}
+        {linkTab === 'neetpg' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs animate-fade-in">
+            <a
+              href="https://www.examrace.com/NEET-PG/NEET-PG-Previous-Years-Papers/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-750 hover:border-teal-500 transition-all flex flex-col justify-between space-y-2 group"
+            >
+              <div className="space-y-1">
+                <span className="font-bold text-slate-955 dark:text-white block group-hover:text-teal-600 transition-colors">
+                  ExamRace NEET-PG Previous Years Papers
+                </span>
+                <span className="text-3xs text-slate-400 block font-mono">www.examrace.com</span>
+                <p className="text-slate-500 dark:text-slate-455 leading-normal text-3xs">
+                  Access official NEET-PG past year question papers, answers key, and memory questions.
+                </p>
+              </div>
+              <div className="flex items-center space-x-1 text-teal-600 dark:text-teal-400 font-extrabold text-3xs pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
+                <span>Open NEET-PG Papers</span>
+                <ExternalLink className="w-3 h-3" />
+              </div>
+            </a>
+
+            <a
+              href="https://www.examrace.com/NEET-PG/NEET-PG-Practice-Tests/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-750 hover:border-teal-500 transition-all flex flex-col justify-between space-y-2 group"
+            >
+              <div className="space-y-1">
+                <span className="font-bold text-slate-955 dark:text-white block group-hover:text-teal-600 transition-colors">
+                  ExamRace NEET-PG Mock Practice Tests
+                </span>
+                <span className="text-3xs text-slate-400 block font-mono">www.examrace.com</span>
+                <p className="text-slate-500 dark:text-slate-455 leading-normal text-3xs">
+                  Free online mock practice tests, MCQs, and revisions for National Eligibility cum Entrance Test PG.
+                </p>
+              </div>
+              <div className="flex items-center space-x-1 text-teal-600 dark:text-teal-400 font-extrabold text-3xs pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
+                <span>Open Practice Tests</span>
+                <ExternalLink className="w-3 h-3" />
+              </div>
+            </a>
+
+            <a
+              href="https://www.examrace.com/NEET-PG/NEET-PG-Book-List/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-750 hover:border-teal-500 transition-all flex flex-col justify-between space-y-2 group"
+            >
+              <div className="space-y-1">
+                <span className="font-bold text-slate-955 dark:text-white block group-hover:text-teal-600 transition-colors">
+                  ExamRace NEET-PG Recommended Book List
+                </span>
+                <span className="text-3xs text-slate-400 block font-mono">www.examrace.com</span>
+                <p className="text-slate-500 dark:text-slate-455 leading-normal text-3xs">
+                  Reference guides, medical prep textbooks list, and subject-wise reference materials.
+                </p>
+              </div>
+              <div className="flex items-center space-x-1 text-teal-600 dark:text-teal-400 font-extrabold text-3xs pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
+                <span>Open Book List</span>
+                <ExternalLink className="w-3 h-3" />
+              </div>
+            </a>
+
+            <a
+              href="https://www.examrace.com/NEET-PG/NEET-PG-Exam-Preparation/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-750 hover:border-teal-500 transition-all flex flex-col justify-between space-y-2 group"
+            >
+              <div className="space-y-1">
+                <span className="font-bold text-slate-955 dark:text-white block group-hover:text-teal-600 transition-colors">
+                  ExamRace NEET-PG Preparation Tips
+                </span>
+                <span className="text-3xs text-slate-400 block font-mono">www.examrace.com</span>
+                <p className="text-slate-500 dark:text-slate-455 leading-normal text-3xs">
+                  Strategic advice, high-yield topics guides, schedules, and revision tips for NEET-PG aspirants.
+                </p>
+              </div>
+              <div className="flex items-center space-x-1 text-teal-600 dark:text-teal-400 font-extrabold text-3xs pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
+                <span>Open Prep Tips</span>
+                <ExternalLink className="w-3 h-3" />
+              </div>
+            </a>
+
+            <a
+              href="https://www.examrace.com/Study-Material/Medical-Science/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-750 hover:border-teal-500 transition-all flex flex-col justify-between space-y-2 group md:col-span-2"
+            >
+              <div className="space-y-1">
+                <span className="font-bold text-slate-955 dark:text-white block group-hover:text-teal-600 transition-colors">
+                  ExamRace Medical Science High-Yield Study Notes
+                </span>
+                <span className="text-3xs text-slate-400 block font-mono">www.examrace.com</span>
+                <p className="text-slate-500 dark:text-slate-455 leading-normal text-3xs">
+                  Complete, extensive web notes database on Anatomy, Physiology, Pathology, and Medicine clinical concepts.
+                </p>
+              </div>
+              <div className="flex items-center space-x-1 text-teal-600 dark:text-teal-400 font-extrabold text-3xs pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
+                <span>Open Medical Study Material</span>
+                <ExternalLink className="w-3 h-3" />
+              </div>
+            </a>
+          </div>
+        )}
+
+        {/* Tab 3: NCERT & NIOS Links */}
+        {linkTab === 'ncert' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs animate-fade-in">
+            <a
+              href="https://www.flexiprep.com/Subject-Wise-NCERT-Books-PDF/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-750 hover:border-teal-500 transition-all flex flex-col justify-between space-y-2 group"
+            >
+              <div className="space-y-1">
+                <span className="font-bold text-slate-955 dark:text-white block group-hover:text-teal-600 transition-colors">
+                  FlexiPrep Subject-Wise NCERT Books PDF
+                </span>
+                <span className="text-3xs text-slate-400 block font-mono">www.flexiprep.com</span>
+                <p className="text-slate-500 dark:text-slate-455 leading-normal text-3xs">
+                  Free download links for NCERT textbooks (Biology, Chemistry, Physics, etc.) for foundational revision.
+                </p>
+              </div>
+              <div className="flex items-center space-x-1 text-teal-600 dark:text-teal-400 font-extrabold text-3xs pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
+                <span>Open NCERT Books</span>
+                <ExternalLink className="w-3 h-3" />
+              </div>
+            </a>
+
+            <a
+              href="https://www.flexiprep.com/NCERT-Notes/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-750 hover:border-teal-500 transition-all flex flex-col justify-between space-y-2 group"
+            >
+              <div className="space-y-1">
+                <span className="font-bold text-slate-955 dark:text-white block group-hover:text-teal-600 transition-colors">
+                  FlexiPrep NCERT Class-Wise Revision Notes
+                </span>
+                <span className="text-3xs text-slate-400 block font-mono">www.flexiprep.com</span>
+                <p className="text-slate-500 dark:text-slate-455 leading-normal text-3xs">
+                  Summarized study notes for fast foundational revisions in Science, Biology, and basics.
+                </p>
+              </div>
+              <div className="flex items-center space-x-1 text-teal-600 dark:text-teal-400 font-extrabold text-3xs pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
+                <span>Open NCERT Notes</span>
+                <ExternalLink className="w-3 h-3" />
+              </div>
+            </a>
+
+            <a
+              href="https://www.flexiprep.com/NCERT-Exercise-Solutions/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-750 hover:border-teal-500 transition-all flex flex-col justify-between space-y-2 group"
+            >
+              <div className="space-y-1">
+                <span className="font-bold text-slate-955 dark:text-white block group-hover:text-teal-600 transition-colors">
+                  FlexiPrep NCERT Textbook Exercise Solutions
+                </span>
+                <span className="text-3xs text-slate-400 block font-mono">www.flexiprep.com</span>
+                <p className="text-slate-500 dark:text-slate-455 leading-normal text-3xs">
+                  Detailed step-by-step exercise answers and explanations for NCERT questions.
+                </p>
+              </div>
+              <div className="flex items-center space-x-1 text-teal-600 dark:text-teal-400 font-extrabold text-3xs pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
+                <span>Open solutions</span>
+                <ExternalLink className="w-3 h-3" />
+              </div>
+            </a>
+
+            <a
+              href="https://www.flexiprep.com/NIOS-Notes/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-750 hover:border-teal-500 transition-all flex flex-col justify-between space-y-2 group"
+            >
+              <div className="space-y-1">
+                <span className="font-bold text-slate-955 dark:text-white block group-hover:text-teal-600 transition-colors">
+                  FlexiPrep NIOS National Open School Notes
+                </span>
+                <span className="text-3xs text-slate-400 block font-mono">www.flexiprep.com</span>
+                <p className="text-slate-500 dark:text-slate-455 leading-normal text-3xs">
+                  Study notes, syllabus guides, and summaries for NIOS secondary and senior secondary books.
+                </p>
+              </div>
+              <div className="flex items-center space-x-1 text-teal-600 dark:text-teal-400 font-extrabold text-3xs pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
+                <span>Open NIOS Notes</span>
+                <ExternalLink className="w-3 h-3" />
+              </div>
+            </a>
+          </div>
+        )}
+
+        {/* Tab 4: Other Exam Links */}
+        {linkTab === 'other' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs animate-fade-in">
+            <a
+              href="https://www.exampyq.com/RBI-Grade-B/Questions/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-755 hover:border-teal-500 transition-all flex flex-col justify-between space-y-2 group md:col-span-2"
+            >
+              <div className="space-y-1">
+                <span className="font-bold text-slate-955 dark:text-white block group-hover:text-teal-600 transition-colors">
+                  ExamPyq RBI Grade B Officer Questions Bank
+                </span>
+                <span className="text-3xs text-slate-400 block font-mono">www.exampyq.com</span>
+                <p className="text-slate-500 dark:text-slate-455 leading-normal text-3xs">
+                  Bank exam previous years question sets, solutions, and explanations for RBI Officer recruitment exams.
+                </p>
+              </div>
+              <div className="flex items-center space-x-1 text-teal-600 dark:text-teal-400 font-extrabold text-3xs pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
+                <span>Open RBI Officer QBank</span>
+                <ExternalLink className="w-3 h-3" />
+              </div>
+            </a>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

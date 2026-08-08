@@ -22,11 +22,24 @@ export const AnalyticsView: React.FC = () => {
       subjectStats[s.id] = { total: 0, correct: 0, percentage: 0, name: s.name };
     });
 
+    let videoSolved = 0;
+    let imageSolved = 0;
+    let textSolved = 0;
+
     attempts.forEach(att => {
       const q = QUESTIONS.find(qu => qu.id === att.questionId);
-      if (q && subjectStats[q.subjectId]) {
-        subjectStats[q.subjectId].total += 1;
-        if (att.isCorrect) subjectStats[q.subjectId].correct += 1;
+      if (q) {
+        if (subjectStats[q.subjectId]) {
+          subjectStats[q.subjectId].total += 1;
+          if (att.isCorrect) subjectStats[q.subjectId].correct += 1;
+        }
+        if (q.type === 'video' || q.videoUrl) {
+          videoSolved++;
+        } else if (q.imageUrl || q.imagePath) {
+          imageSolved++;
+        } else {
+          textSolved++;
+        }
       }
     });
 
@@ -40,7 +53,20 @@ export const AnalyticsView: React.FC = () => {
       .filter(([_, stats]) => stats.total >= 1)
       .sort((a, b) => a[1].percentage - b[1].percentage);
 
-    return { totalAttempts, correctCount, accuracy, subjectStats, weakList };
+    const totalVideo = QUESTIONS.filter(q => q.type === 'video' || q.videoUrl).length;
+    const totalImage = QUESTIONS.filter(q => q.imageUrl || q.imagePath).length;
+    const totalText = QUESTIONS.length - totalVideo - totalImage;
+    const qbankCompletionPercentage = QUESTIONS.length > 0 
+      ? Math.round((attempts.length / QUESTIONS.length) * 100) 
+      : 0;
+
+    return { 
+      totalAttempts, correctCount, accuracy, subjectStats, weakList,
+      videoSolved, totalVideo, 
+      imageSolved, totalImage, 
+      textSolved, totalText,
+      qbankCompletionPercentage 
+    };
   }, [attempts]);
 
   const scoreRange = profile?.estimatedScoreRange || [125, 145];
@@ -104,6 +130,135 @@ export const AnalyticsView: React.FC = () => {
           <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400">Lvl {profile?.level || 1}</div>
           <span className="text-3xs text-slate-400 font-bold">{profile?.xp || 0} XP Earned</span>
         </div>
+      </div>
+
+      {/* Media Type & Exam QBank Completion Breakdown */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        {/* Card 1: Question Type Progress */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4">
+          <h3 className="font-black text-sm text-slate-900 dark:text-white flex items-center space-x-2">
+            <Zap className="w-4 h-4 text-amber-500" />
+            <span>Solved Questions by Format type</span>
+          </h3>
+
+          <div className="space-y-3.5 text-xs">
+            {/* Text Type */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between font-bold">
+                <span className="text-slate-500">📝 Standard Clinical MCQs</span>
+                <span className="text-slate-800 dark:text-slate-200">{analytics.textSolved} / {analytics.totalText}</span>
+              </div>
+              <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div
+                  className="bg-indigo-600 h-full rounded-full transition-all"
+                  style={{ width: `${analytics.totalText > 0 ? (analytics.textSolved / analytics.totalText) * 100 : 0}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Video Type */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between font-bold">
+                <span className="text-slate-500">🎬 Video-Based Clinical Questions</span>
+                <span className="text-slate-800 dark:text-slate-200">{analytics.videoSolved} / {analytics.totalVideo}</span>
+              </div>
+              <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div
+                  className="bg-teal-500 h-full rounded-full transition-all"
+                  style={{ width: `${analytics.totalVideo > 0 ? (analytics.videoSolved / analytics.totalVideo) * 100 : 0}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Image Type */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between font-bold">
+                <span className="text-slate-500">🖼️ Image-Based Diagnostic Questions</span>
+                <span className="text-slate-800 dark:text-slate-200">{analytics.imageSolved} / {analytics.totalImage}</span>
+              </div>
+              <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div
+                  className="bg-rose-500 h-full rounded-full transition-all"
+                  style={{ width: `${analytics.totalImage > 0 ? (analytics.imageSolved / analytics.totalImage) * 100 : 0}%` }}
+                />
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Card 2: Syllabus Completion Tracker */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between space-y-4">
+          <div className="space-y-2">
+            <h3 className="font-black text-sm text-slate-900 dark:text-white flex items-center space-x-2">
+              <Target className="w-4 h-4 text-teal-600" />
+              <span>Full QBank Completion Ratio</span>
+            </h3>
+            <p className="text-3xs text-slate-500 leading-normal">
+              Your overall coverage of the 2,000+ medical questions mapped to pre-clinical, para-clinical, and clinical disciplines.
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-5 py-2">
+            {/* Progress Circular representation */}
+            <div className="relative w-16 h-16 rounded-full border-4 border-slate-100 dark:border-slate-800 flex items-center justify-center font-black text-base text-teal-600 dark:text-teal-400">
+              {analytics.qbankCompletionPercentage}%
+            </div>
+            <div className="text-xs">
+              <span className="font-bold text-slate-900 dark:text-white block">Syllabus Completion</span>
+              <span className="text-3xs text-slate-400 font-medium">Goal: 100% completion before exam horizon</span>
+            </div>
+          </div>
+          <div className="text-3xs text-slate-400">
+            Current Target Score is locked at <strong className="text-teal-600 dark:text-teal-400">150 / 300 passing threshold</strong>.
+          </div>
+        </div>
+
+      </div>
+
+      {/* Completed Past Papers & Simulators List */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-4">
+        <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center space-x-2">
+          <Award className="w-4.5 h-4.5 text-indigo-500" />
+          <span>Completed Official Past Papers & Grand Test Simulators</span>
+        </h3>
+        
+        {gtAttempts.length === 0 ? (
+          <div className="p-6 text-center text-xs text-slate-500 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200 dark:border-slate-850">
+            No papers or simulation tests completed yet. Navigate to the <strong>Grand Test Series</strong> to run a simulation.
+          </div>
+        ) : (
+          <div className="space-y-3.5">
+            {gtAttempts.map((att) => (
+              <div
+                key={att.id}
+                className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800/60 flex items-center justify-between text-xs transition-all hover:bg-slate-100/50"
+              >
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <span className="font-bold text-slate-900 dark:text-white">{att.testTitle}</span>
+                    <span className={`text-3xs font-extrabold px-2 py-0.5 rounded ${
+                      att.passed ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'
+                    }`}>
+                      {att.passed ? 'PASS' : 'REVISE'}
+                    </span>
+                  </div>
+                  <span className="text-3xs text-slate-400 block mt-1">
+                    Completed on {new Date(att.timestamp).toLocaleDateString()} • accuracy: {att.percentage}%
+                  </span>
+                </div>
+
+                <div className="text-right">
+                  <span className="font-black text-sm text-slate-900 dark:text-white">
+                    {att.score} / {att.totalQuestions}
+                  </span>
+                  <span className="text-3xs block text-slate-400">Score Achieved</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Subject-Wise Accuracy Matrix */}

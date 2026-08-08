@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { LayoutDashboard, PenTool, Award, Flame } from 'lucide-react';
+import { LayoutDashboard, PenTool, Award, Flame, Globe } from 'lucide-react';
 
 export const MobileNav: React.FC = () => {
   const { activeTab, setActiveTab, profile } = useApp();
@@ -13,6 +13,7 @@ export const MobileNav: React.FC = () => {
     { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
     { id: 'pyq-papers', label: 'Papers', icon: Award },
     { id: 'practice', label: 'Practice', icon: PenTool },
+    { id: 'resources', label: 'Resources', icon: Globe },
     { id: 'tests', label: 'Tests', icon: Flame }
   ];
 
