@@ -53,7 +53,11 @@ export const UploadSimulatorModal: React.FC<UploadSimulatorModalProps> = ({ onCl
 
         // 2. Generate Simulator
         const testId = `user_gt_${Date.now()}`;
-        const qPool = [...QUESTIONS].sort(() => 0.5 - Math.random()).slice(0, 300);
+        const allVideos = QUESTIONS.filter(q => !!q.videoUrl);
+        const textQs = QUESTIONS.filter(q => !q.videoUrl);
+        const selectedVideos = [...allVideos].sort(() => 0.5 - Math.random()).slice(0, 30); // Ensure ~30 video questions
+        const selectedText = [...textQs].sort(() => 0.5 - Math.random()).slice(0, 270);
+        const qPool = [...selectedVideos, ...selectedText].sort(() => 0.5 - Math.random());
         const newTest: GrandTest = {
           id: testId,
           title: `${title} - Custom Simulator`,

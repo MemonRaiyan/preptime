@@ -300,90 +300,110 @@ export const FreeResourceHub: React.FC = () => {
         </div>
       </div>
 
-      {/* Resource Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredResources.map((res) => {
-          const subject = SUBJECTS.find(s => s.id === res.subjectId);
+      {/* Resource Sections */}
+      <div className="space-y-12">
+        {[
+          { title: '📄 Clinical PDFs & Papers', type: 'PDF' },
+          { title: '📚 Open-Access Textbooks', type: 'BOOK' },
+          { title: '🎥 Video Bank & Lectures', type: 'VIDEO' },
+          { title: '🌐 External Websites & Archives', type: 'OPEN_ACCESS' },
+          { title: '🌐 Official Sites', type: 'OFFICIAL' },
+        ].map(section => {
+          const sectionResources = filteredResources.filter(res => res.resourceType === section.type);
+          if (sectionResources.length === 0) return null;
+          
           return (
-            <div
-              key={res.id}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:border-teal-500/50 transition-all flex flex-col group"
-            >
-              {/* Media Thumbnail header */}
-              <div className="relative h-44 w-full bg-slate-900 overflow-hidden">
-                <img
-                  src={res.thumbnail || 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=400&q=80'}
-                  alt={res.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-85"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
-                
-                {/* Play / View Overlay badge */}
-                <div className="absolute top-3 left-3 flex items-center space-x-1.5">
-                  <span className={`text-3xs font-extrabold px-2.5 py-1 rounded-full border backdrop-blur-md ${getSourceBadgeColor(res.license)}`}>
-                    {res.license}
-                  </span>
-                  {res.isVerified && (
-                    <span className="bg-emerald-500 text-white text-3xs font-bold px-2 py-0.5 rounded-full flex items-center space-x-1">
-                      <CheckCircle2 className="w-3 h-3" />
-                      <span>Verified</span>
-                    </span>
-                  )}
-                </div>
-
-                {/* Duration badge */}
-                {res.duration && (
-                  <div className="absolute bottom-3 right-3 bg-slate-950/80 backdrop-blur-md text-white text-3xs font-bold px-2 py-0.5 rounded-md flex items-center space-x-1">
-                    <Clock className="w-3 h-3" />
-                    <span>{res.duration}</span>
-                  </div>
-                )}
-                
-                {/* Subject tag */}
-                <div className="absolute bottom-3 left-3 text-2xs font-extrabold text-teal-400 bg-slate-950/80 px-2 py-0.5 rounded">
-                  {subject?.name || res.subjectId} • {res.systemName}
-                </div>
-              </div>
-
-              {/* Card Body */}
-              <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                <div className="space-y-2">
-                  <h3 className="font-bold text-base text-slate-900 dark:text-white line-clamp-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
-                    {res.title}
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
-                    {res.description}
-                  </p>
-                </div>
-
-                {/* Metadata */}
-                <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center justify-between text-2xs text-slate-400">
-                    <span>Source: <strong className="text-slate-700 dark:text-slate-300">{res.source}</strong></span>
-                    <span>By: <strong className="text-slate-700 dark:text-slate-300">{res.author}</strong></span>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center space-x-2 pt-1">
-                    <button
-                      onClick={() => setActiveResource(res)}
-                      className="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 shadow-md shadow-teal-600/10 transition-all"
+            <div key={section.type} className="space-y-6">
+              <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800 pb-2">
+                {section.title}
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sectionResources.map((res) => {
+                  const subject = SUBJECTS.find(s => s.id === res.subjectId);
+                  return (
+                    <div
+                      key={res.id}
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:border-teal-500/50 transition-all flex flex-col group"
                     >
-                      {res.resourceType === 'VIDEO' ? <Play className="w-3.5 h-3.5" /> : <BookOpen className="w-3.5 h-3.5" />}
-                      <span>Open Learning Hub</span>
-                    </button>
-                    <a
-                      href={res.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all"
-                      title="Open in external official tab"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  </div>
-                </div>
+                      {/* Media Thumbnail header */}
+                      <div className="relative h-44 w-full bg-slate-900 overflow-hidden">
+                        <img
+                          src={res.thumbnail || 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=400&q=80'}
+                          alt={res.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-85"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
+                        
+                        {/* Play / View Overlay badge */}
+                        <div className="absolute top-3 left-3 flex items-center space-x-1.5">
+                          <span className={`text-3xs font-extrabold px-2.5 py-1 rounded-full border backdrop-blur-md ${getSourceBadgeColor(res.license)}`}>
+                            {res.license}
+                          </span>
+                          {res.isVerified && (
+                            <span className="bg-emerald-500 text-white text-3xs font-bold px-2 py-0.5 rounded-full flex items-center space-x-1">
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>Verified</span>
+                            </span>
+                          )}
+                        </div>
 
+                        {/* Duration badge */}
+                        {res.duration && (
+                          <div className="absolute bottom-3 right-3 bg-slate-950/80 backdrop-blur-md text-white text-3xs font-bold px-2 py-0.5 rounded-md flex items-center space-x-1">
+                            <Clock className="w-3 h-3" />
+                            <span>{res.duration}</span>
+                          </div>
+                        )}
+                        
+                        {/* Subject tag */}
+                        <div className="absolute bottom-3 left-3 text-2xs font-extrabold text-teal-400 bg-slate-950/80 px-2 py-0.5 rounded">
+                          {subject?.name || res.subjectId} • {res.systemName}
+                        </div>
+                      </div>
+
+                      {/* Card Body */}
+                      <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                        <div className="space-y-2">
+                          <h3 className="font-bold text-base text-slate-900 dark:text-white line-clamp-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                            {res.title}
+                          </h3>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                            {res.description}
+                          </p>
+                        </div>
+
+                        {/* Metadata */}
+                        <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                          <div className="flex items-center justify-between text-2xs text-slate-400">
+                            <span>Source: <strong className="text-slate-700 dark:text-slate-300">{res.source}</strong></span>
+                            <span>By: <strong className="text-slate-700 dark:text-slate-300">{res.author}</strong></span>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex items-center space-x-2 pt-1">
+                            <button
+                              onClick={() => setActiveResource(res)}
+                              className="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 shadow-md shadow-teal-600/10 transition-all"
+                            >
+                              {res.resourceType === 'VIDEO' ? <Play className="w-3.5 h-3.5" /> : <BookOpen className="w-3.5 h-3.5" />}
+                              <span>Open Learning Hub</span>
+                            </button>
+                            <a
+                              href={res.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all"
+                              title="Open in external official tab"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </a>
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           );
