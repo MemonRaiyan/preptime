@@ -1,138 +1,191 @@
 'use client';
 
 import React, { useState } from 'react';
-import { QUESTIONS, SUBJECTS } from '../data/mockDb';
+import { useApp } from '../context/AppContext';
+import { FeatureFlags } from '../types/database';
+import { SUBJECTS, TOPICS, QUESTIONS, FREE_RESOURCES } from '../data/mockDb';
 import { 
-  ShieldCheck, FileText, CheckCircle, Clock, AlertTriangle, 
-  ChevronRight, Sparkles, Star, ThumbsUp, XCircle 
+  ShieldAlert, CheckCircle2, XCircle, ToggleLeft, ToggleRight, 
+  Sparkles, Layers, FileText, Award, Database, Settings 
 } from 'lucide-react';
 
 export const AdminPanel: React.FC = () => {
-  // Mock questions pending approval
-  const [adminQueue, setAdminQueue] = useState([
-    {
-      id: 'aq1',
-      subjectId: 'medicine',
-      topicId: 'myocardial-infarction',
-      questionText: 'Which ECG lead placement is specific for detecting right ventricular infarction?',
-      options: ['V1 and V2', 'V3R and V4R', 'V5 and V6', 'Lead I and aVL'],
-      correctAnswerIndex: 1,
-      explanation: 'Right ventricular infarction presents with ST elevation in right-sided chest leads, most specifically V3R and V4R. Avoid nitrate therapies.',
-      status: 'pending_reviewer',
-      aiValidated: true
-    },
-    {
-      id: 'aq2',
-      subjectId: 'pharmacology',
-      topicId: 'autonomic-drugs',
-      questionText: 'What is the primary mechanism of action of Pyridostigmine in myasthenia gravis?',
-      options: ['Reversible acetylcholinesterase inhibitor', 'Irreversible acetylcholinesterase inhibitor', 'Direct cholinergic agonist', 'Muscarinic antagonist'],
-      correctAnswerIndex: 0,
-      explanation: 'Pyridostigmine is a carbamate that reversibly binds acetylcholinesterase, prolonging the presence of ACh in the synaptic cleft.',
-      status: 'ai_validated',
-      aiValidated: true
-    }
-  ]);
+  const { featureFlags, toggleFeatureFlag, resources, verifyResource } = useApp();
 
-  const handleApprove = (id: string) => {
-    setAdminQueue(prev => 
-      prev.map(item => item.id === id ? { ...item, status: 'published' } : item)
-    );
-    alert('Question Status Updated: Published to active FMGE Practice Bank.');
-  };
+  const [activeAdminTab, setActiveAdminTab] = useState<'flags' | 'moderation' | 'database'>('flags');
 
-  const getSubjectName = (subId: string) => {
-    return SUBJECTS.find(s => s.id === subId)?.name || subId;
-  };
+  const pendingModeration = resources.filter(r => !r.isVerified);
 
   return (
-    <div className="space-y-6 pb-20">
-      <div className="space-y-1">
-        <h2 className="text-2xl font-black text-slate-850 dark:text-white tracking-tight">Admin Dashboard</h2>
-        <p className="text-xs text-slate-500">Quality vetting pipelines for AI generated medical exam materials.</p>
-      </div>
+    <div className="max-w-5xl mx-auto space-y-8 animate-fade-in pb-16">
+      
+      {/* Header Banner */}
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 md:p-10 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 border border-slate-800">
+        <div className="space-y-3 max-w-2xl">
+          <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-teal-300">
+            <ShieldAlert className="w-3.5 h-3.5" />
+            <span>Administrator & Ecosystem Controller</span>
+          </div>
+          <h1 className="text-2xl md:text-4xl font-black tracking-tight text-white">
+            Admin Panel & Resource Moderation
+          </h1>
+          <p className="text-xs md:text-sm text-slate-300 leading-relaxed">
+            Manage application feature flags, review submitted educational resources through the AI moderation pipeline, and inspect database integrity.
+          </p>
+        </div>
 
-      {/* Info notification */}
-      <div className="p-4 bg-teal-50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-900/40 rounded-2xl text-xs text-teal-800 dark:text-teal-400 flex items-start space-x-3">
-        <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5 text-teal-650" />
-        <div className="space-y-1 leading-normal font-normal">
-          <span className="font-bold block">Medical Vetting Workflow Protocol:</span>
-          <span>Never automatically publish high-stakes medical education material. The pipeline demands: **AI Generated → AI Validation → Medical Reviewer Check → Approved & Published** to ensure zero error rates.</span>
+        {/* Tab switch */}
+        <div className="flex gap-1.5 bg-white/10 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 text-xs font-bold shrink-0">
+          <button
+            onClick={() => setActiveAdminTab('flags')}
+            className={`px-3 py-1.5 rounded-xl transition-all ${
+              activeAdminTab === 'flags' ? 'bg-white text-slate-900 font-black shadow-md' : 'text-white/80'
+            }`}
+          >
+            🚩 Feature Flags
+          </button>
+          <button
+            onClick={() => setActiveAdminTab('moderation')}
+            className={`px-3 py-1.5 rounded-xl transition-all ${
+              activeAdminTab === 'moderation' ? 'bg-white text-slate-900 font-black shadow-md' : 'text-white/80'
+            }`}
+          >
+            🛡️ Resource Moderation
+          </button>
+          <button
+            onClick={() => setActiveAdminTab('database')}
+            className={`px-3 py-1.5 rounded-xl transition-all ${
+              activeAdminTab === 'database' ? 'bg-white text-slate-900 font-black shadow-md' : 'text-white/80'
+            }`}
+          >
+            🗄️ Database
+          </button>
         </div>
       </div>
 
-      {/* Approval Vetting List */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-        <h3 className="font-extrabold text-sm text-slate-850 dark:text-white border-b pb-2 border-slate-100 dark:border-slate-800">
-          Vetting Pipeline Queue ({adminQueue.filter(i => i.status !== 'published').length} pending)
-        </h3>
+      {/* Tab 1: Future Monetization & Feature Flags (Sections 3 & 47) */}
+      {activeAdminTab === 'flags' && (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
+          <div className="space-y-1">
+            <h3 className="font-bold text-base text-slate-900 dark:text-white">
+              Application Architecture Feature Flags
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              The core application is built 100% free and open-source. Toggle these flags to test different modes of the platform.
+            </p>
+          </div>
 
-        <div className="space-y-4">
-          {adminQueue.map((item) => {
-            const isPublished = item.status === 'published';
-            return (
-              <div 
-                key={item.id}
-                className={`p-5 border rounded-2xl space-y-4 transition-all ${
-                  isPublished 
-                    ? 'border-slate-100 bg-slate-50/40 dark:bg-slate-950/10 opacity-60' 
-                    : 'border-slate-200 dark:border-slate-800 bg-transparent'
-                }`}
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            {Object.entries(featureFlags).map(([flag, isEnabled]) => (
+              <div
+                key={flag}
+                className="py-4 flex items-center justify-between"
               >
-                {/* top row */}
-                <div className="flex justify-between items-center text-3xs font-extrabold tracking-wide uppercase">
-                  <span className="text-teal-650">{getSubjectName(item.subjectId)}</span>
-                  
-                  {/* Status badges */}
-                  <div className="flex space-x-2">
-                    {item.aiValidated && (
-                      <span className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 px-2 py-0.5 rounded">
-                        ✓ AI VALIDATED
-                      </span>
-                    )}
-                    <span className={`px-2 py-0.5 rounded ${
-                      isPublished 
-                        ? 'bg-slate-150 text-slate-500' 
-                        : item.status === 'pending_reviewer'
-                        ? 'bg-amber-500/10 border border-amber-500/30 text-amber-600'
-                        : 'bg-blue-500/10 border border-blue-500/30 text-blue-650'
-                    }`}>
-                      {isPublished ? 'PUBLISHED' : item.status.replace('_', ' ')}
+                <div>
+                  <div className="font-mono text-xs font-bold text-slate-900 dark:text-white">
+                    {flag}
+                  </div>
+                  <span className="text-3xs text-slate-400">
+                    {flag === 'FREE_AI_TUTOR' && 'Controls free unlimited access to the AI Teacher.'}
+                    {flag === 'COMMUNITY_MODERATION' && 'Enforces strict medical fact checking in peer discussion boards.'}
+                    {flag === 'VOICE_AI_ENABLED' && 'Enables Web Speech audio voice tutor synthesis.'}
+                    {flag === 'BETA_SIMULATOR' && 'Enables next-generation 300Q dual-session full FMGE simulator.'}
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => toggleFeatureFlag(flag as keyof FeatureFlags)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
+                    isEnabled
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700'
+                  }`}
+                >
+                  <span>{isEnabled ? 'ENABLED (TRUE)' : 'DISABLED (FALSE)'}</span>
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tab 2: Resource Moderation Pipeline (Section 40) */}
+      {activeAdminTab === 'moderation' && (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
+          <div className="space-y-1">
+            <h3 className="font-bold text-base text-slate-900 dark:text-white">
+              AI Resource Moderation Pipeline
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Pipeline: DISCOVERED &rarr; AI CLASSIFICATION &rarr; CHECK URL &rarr; CHECK SOURCE &rarr; CHECK LICENSE &rarr; ADMIN REVIEW &rarr; PUBLISHED.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {resources.map((res) => (
+              <div
+                key={res.id}
+                className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-750 flex items-center justify-between"
+              >
+                <div className="space-y-1 overflow-hidden">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-3xs font-extrabold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700">
+                      {res.license}
+                    </span>
+                    <span className={`text-3xs font-bold ${res.isVerified ? 'text-emerald-600' : 'text-amber-600'}`}>
+                      {res.isVerified ? '✓ Published & Verified' : '⏳ In Review'}
                     </span>
                   </div>
+                  <h4 className="font-bold text-xs text-slate-900 dark:text-white truncate">
+                    {res.title}
+                  </h4>
+                  <span className="text-3xs text-slate-400">
+                    Source: {res.source} • {res.author}
+                  </span>
                 </div>
 
-                {/* question core */}
-                <div className="space-y-2">
-                  <p className="text-xs font-bold text-slate-800 dark:text-white leading-relaxed">
-                    {item.questionText}
-                  </p>
-                  <ul className="list-disc pl-5 text-4xs text-slate-500 dark:text-slate-400 space-y-1">
-                    {item.options.map((opt, oIdx) => (
-                      <li key={oIdx} className={oIdx === item.correctAnswerIndex ? 'font-bold text-slate-700 dark:text-slate-200' : ''}>
-                        {opt} {oIdx === item.correctAnswerIndex ? '(Correct)' : ''}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* action footer */}
-                {!isPublished && (
-                  <div className="flex justify-end pt-3 border-t border-slate-100 dark:border-slate-850">
-                    <button
-                      onClick={() => handleApprove(item.id)}
-                      className="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-3xs font-bold shadow-md active:scale-95 transition-all flex items-center space-x-1.5"
-                    >
-                      <ThumbsUp className="w-3 h-3 text-teal-650 dark:text-teal-400" />
-                      <span>Approve & Publish</span>
-                    </button>
-                  </div>
+                {!res.isVerified && (
+                  <button
+                    onClick={() => verifyResource(res.id)}
+                    className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-1.5 rounded-xl text-xs font-bold shrink-0 ml-4"
+                  >
+                    Approve &amp; Publish
+                  </button>
                 )}
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Tab 3: Database & Content Metrics */}
+      {activeAdminTab === 'database' && (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
+          <h3 className="font-bold text-base text-slate-900 dark:text-white">
+            Current Content Schema Inventory
+          </h3>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <span className="text-2xs text-slate-400 block font-bold">Total Subjects</span>
+              <span className="text-xl font-black text-slate-900 dark:text-white">19 / 19</span>
+            </div>
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <span className="text-2xs text-slate-400 block font-bold">Total Topics</span>
+              <span className="text-xl font-black text-slate-900 dark:text-white">{TOPICS.length}</span>
+            </div>
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <span className="text-2xs text-slate-400 block font-bold">Questions in Bank</span>
+              <span className="text-xl font-black text-teal-600 dark:text-teal-400">{QUESTIONS.length}</span>
+            </div>
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <span className="text-2xs text-slate-400 block font-bold">Free Resources</span>
+              <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">{resources.length}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

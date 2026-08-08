@@ -1,7 +1,11 @@
 'use client';
 
 import React from 'react';
-import { BookOpen, HelpCircle, Activity, Award, Calendar, Zap, MessageSquare } from 'lucide-react';
+import { 
+  Sparkles, BookOpen, Video, PenTool, Award, Brain, 
+  Stethoscope, Image as ImageIcon, ShieldCheck, ArrowRight, 
+  CheckCircle2, Compass, Zap 
+} from 'lucide-react';
 
 interface LandingPageProps {
   onStartFree: () => void;
@@ -9,187 +13,203 @@ interface LandingPageProps {
   onOpenTutor: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onStartFree, onTakeDiagnostic, onOpenTutor }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({
+  onStartFree,
+  onTakeDiagnostic,
+  onOpenTutor
+}) => {
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950">
-      {/* Header */}
-      <header className="sticky top-0 z-50 glass border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-teal-500 selection:text-white">
+      
+      {/* Top Navbar */}
+      <header className="px-6 md:px-12 py-5 flex items-center justify-between border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
+          <div className="w-10 h-10 rounded-2xl bg-teal-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-teal-500/20">
             FM
           </div>
-          <span className="font-extrabold text-2xl tracking-tight text-slate-800 dark:text-white">
-            FMGE<span className="text-teal-600 dark:text-teal-400">MASTER</span>
+          <span className="font-black text-2xl tracking-tight text-white">
+            FMGE<span className="text-teal-400">MASTER</span>
           </span>
         </div>
-        <div className="flex items-center space-x-4">
-          <button 
-            onClick={onStartFree}
-            className="px-5 py-2.5 rounded-full text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-teal-600 transition-colors"
+
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={onTakeDiagnostic}
+            className="hidden sm:inline-flex bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-2xl text-xs font-bold transition-all"
           >
-            Sign In
+            Take Diagnostic Test
           </button>
           <button
             onClick={onStartFree}
-            className="px-6 py-2.5 bg-teal-600 hover:bg-teal-500 text-white rounded-full text-sm font-semibold shadow-lg shadow-teal-500/20 active:scale-95 transition-all"
+            className="bg-teal-500 hover:bg-teal-400 text-slate-950 px-5 py-2 rounded-2xl text-xs font-black shadow-lg shadow-teal-500/20 transition-all"
           >
             Start Free
           </button>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative py-24 px-6 max-w-7xl mx-auto flex flex-col items-center text-center">
-        {/* Background gradient blur */}
-        <div className="absolute top-0 -z-10 w-72 h-72 rounded-full bg-teal-400/20 blur-3xl dark:bg-teal-500/10" />
-        <div className="absolute right-10 bottom-0 -z-10 w-96 h-96 rounded-full bg-blue-400/20 blur-3xl dark:bg-blue-500/10" />
-
-        <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-teal-100 dark:bg-teal-950/40 text-teal-800 dark:text-teal-400 text-sm font-medium mb-6">
-          <Zap className="w-4 h-4 fill-current" />
-          <span>Prepare Smarter. Clear the 150+ Threshold with Confidence.</span>
+      {/* Hero Section (Section 55) */}
+      <section className="px-6 md:px-12 py-16 md:py-28 max-w-6xl mx-auto text-center space-y-8 animate-fade-in">
+        
+        {/* Free First Pill */}
+        <div className="inline-flex items-center space-x-2 bg-teal-500/10 border border-teal-500/30 px-4 py-1.5 rounded-full text-xs font-black text-teal-400">
+          <Sparkles className="w-4 h-4" />
+          <span>100% Free-First AI Medical Preparation Ecosystem</span>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-tight max-w-4xl">
-          AI-Powered Preparation for the <span className="bg-gradient-to-r from-teal-600 via-teal-500 to-blue-600 bg-clip-text text-transparent">FMGE</span> Exam
+        {/* Hero Title */}
+        <h1 className="text-4xl md:text-7xl font-black text-white tracking-tight leading-tight md:leading-none">
+          PREPARE FOR FMGE.<br />
+          <span className="bg-gradient-to-r from-teal-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
+            FOR FREE.
+          </span>
         </h1>
 
-        <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mt-6 leading-relaxed">
-          The ultimate medical prep ecosystem designed specifically for foreign medical graduates. Complete onboarding, diagnose weak areas, practice original questions, and let AI build your custom planner.
+        {/* Subtitle */}
+        <p className="text-base md:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
+          "One intelligent platform to learn, practice, revise and track your FMGE preparation — organized, personalized and AI-powered."
         </p>
 
-        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-10">
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
           <button
             onClick={onStartFree}
-            className="px-8 py-4 bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-500 hover:to-teal-400 text-white rounded-2xl font-bold shadow-xl shadow-teal-500/20 transition-all active:scale-98"
+            className="w-full sm:w-auto bg-teal-500 hover:bg-teal-400 text-slate-950 px-8 py-4 rounded-3xl font-black text-sm shadow-xl shadow-teal-500/20 flex items-center justify-center space-x-2 transition-all"
           >
-            Get Started (Free Forever)
+            <span>START FREE PREPARATION</span>
+            <ArrowRight className="w-4 h-4" />
           </button>
+
           <button
             onClick={onTakeDiagnostic}
-            className="px-8 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-2xl font-bold shadow-md hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-all active:scale-98"
+            className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white border border-slate-700 px-8 py-4 rounded-3xl font-bold text-sm transition-all"
           >
-            Take 15-Min Diagnostic
+            TAKE DIAGNOSTIC TEST
+          </button>
+
+          <button
+            onClick={onOpenTutor}
+            className="w-full sm:w-auto bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 px-8 py-4 rounded-3xl font-bold text-sm transition-all flex items-center justify-center space-x-2"
+          >
+            <Sparkles className="w-4 h-4 text-indigo-400" />
+            <span>ASK AI TEACHER</span>
           </button>
         </div>
 
-        {/* Disclaimer Alert */}
-        <div className="mt-12 max-w-3xl p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-2xl text-left text-xs text-amber-800 dark:text-amber-300">
-          <span className="font-bold">⚠️ IMPORTANT FMGE DISCLAIMER:</span> This platform is an independent educational preparation tool and is not affiliated with the National Board of Examinations in Medical Sciences (NBEMS) or any FMGE examination authority. Exam pattern, eligibility, dates, and rules can change. Always verify current information through official NBEMS sources.
+        {/* Free Core Commitments */}
+        <div className="pt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-bold text-slate-400">
+          <div className="flex items-center justify-center space-x-1.5">
+            <CheckCircle2 className="w-4 h-4 text-teal-400" />
+            <span>Free 19-Subject Syllabus</span>
+          </div>
+          <div className="flex items-center justify-center space-x-1.5">
+            <CheckCircle2 className="w-4 h-4 text-teal-400" />
+            <span>Free AI Tutor & Quizzes</span>
+          </div>
+          <div className="flex items-center justify-center space-x-1.5">
+            <CheckCircle2 className="w-4 h-4 text-teal-400" />
+            <span>Free Verified PYQs</span>
+          </div>
+          <div className="flex items-center justify-center space-x-1.5">
+            <CheckCircle2 className="w-4 h-4 text-teal-400" />
+            <span>Free Grand Test Series</span>
+          </div>
         </div>
+
       </section>
 
-      {/* Features Grid */}
-      <section className="py-20 px-6 max-w-7xl mx-auto border-t border-slate-200 dark:border-slate-800">
-        <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white text-center mb-16">
-          Everything You Need to Succeed on a ₹0 Budget
-        </h2>
+      {/* Feature Grid: "Everything in One Place" */}
+      <section className="px-6 md:px-12 py-20 max-w-7xl mx-auto space-y-12">
+        <div className="text-center space-y-3">
+          <h2 className="text-2xl md:text-4xl font-black text-white">
+            Everything You Need for FMGE in One Place
+          </h2>
+          <p className="text-xs md:text-sm text-slate-400 max-w-2xl mx-auto">
+            STUDY + AI TEACHER + QBANK + REVISION SYSTEM + TEST SERIES + RESOURCE SEARCH + PERFORMANCE COACH.
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800/80 shadow-sm card-hover-effect">
-            <div className="w-12 h-12 rounded-2xl bg-teal-100 dark:bg-teal-950/40 flex items-center justify-center text-teal-600 dark:text-teal-400 mb-6">
-              <BookOpen className="w-6 h-6" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          {/* Feature 1 */}
+          <div className="p-8 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4 hover:border-teal-500/50 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-teal-500/10 text-teal-400 flex items-center justify-center font-bold">
+              <Video className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Structured Study Notes</h3>
-            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-              Unlock original high-yield notes across all 17 pre-clinical, para-clinical, and clinical subjects. Highlight key paragraphs and flag clinical traps.
+            <h3 className="text-lg font-bold text-white">Free Resource Hub</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Curated indexing of legitimate open-access lectures (YouTube), WHO/CDC guidelines, NIH PubMed articles, and official educational documents.
             </p>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800/80 shadow-sm card-hover-effect">
-            <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-950/40 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6">
-              <Zap className="w-6 h-6" />
+          {/* Feature 2 */}
+          <div className="p-8 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4 hover:border-indigo-500/50 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold">
+              <Sparkles className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">AI Study Planner</h3>
-            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-              Enter your weak areas and days until the exam. The engine generates a daily routine and auto-adjusts based on your quiz accuracy scores.
+            <h3 className="text-lg font-bold text-white">AI FMGE Teacher (9 Modes)</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Learn concepts through Simple, Exam-traps, Rapid Revision, Clinical Vignettes, Oral Viva, Comparison tables, or Hindi/Gujarati multilingual voice.
             </p>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800/80 shadow-sm card-hover-effect">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-950/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-6">
-              <HelpCircle className="w-6 h-6" />
+          {/* Feature 3 */}
+          <div className="p-8 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4 hover:border-purple-500/50 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold">
+              <Brain className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">AI Question Generator</h3>
-            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-              Create randomized quick-quizzes with clinical vignettes, single best answer, and image-based queries. Detailed rationale for correct & incorrect options.
+            <h3 className="text-lg font-bold text-white">Spaced Repetition & Mistakes</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              SuperMemo-2 flashcards and automatic root-cause mistake logging with frequency tracking (e.g. "Beta Blockers failed 7 times").
             </p>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800/80 shadow-sm card-hover-effect">
-            <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950/40 flex items-center justify-center text-rose-600 dark:text-rose-400 mb-6">
-              <Activity className="w-6 h-6" />
+          {/* Feature 4 */}
+          <div className="p-8 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4 hover:border-amber-500/50 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
+              <ShieldCheck className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Spaced Repetition</h3>
-            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-              Anki-style flashcards with an embedded SuperMemo-2 algorithm. Set cards as Again, Hard, Good, or Easy to schedule them for optimal long-term retention.
+            <h3 className="text-lg font-bold text-white">Verified PYQs</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Transparently labeled verified past-year questions with authenticated exam years, why the correct answer is right, and why the other 3 are wrong.
             </p>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800/80 shadow-sm card-hover-effect">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-6">
+          {/* Feature 5 */}
+          <div className="p-8 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4 hover:border-rose-500/50 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center font-bold">
+              <Stethoscope className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-bold text-white">Clinical Cases & Images</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Progressive patient vignettes with real-time vitals and high-yield image spotters for Radiology, Pathology, Dermatology, and Ophthalmology.
+            </p>
+          </div>
+
+          {/* Feature 6 */}
+          <div className="p-8 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4 hover:border-teal-500/50 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-teal-500/10 text-teal-400 flex items-center justify-center font-bold">
               <Award className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Mistake Notebook</h3>
-            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-              Auto-saves every incorrect answer. Categorize by error types (Silly, Misread, Concept, Memory) and load target revision tests of just your mistakes.
+            <h3 className="text-lg font-bold text-white">Grand Test Simulations</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              50, 100, 150 and full 300-question FMGE simulations with timed question palettes, post-test AI root-cause diagnostics, and readiness estimation.
             </p>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800/80 shadow-sm card-hover-effect">
-            <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/40 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-6">
-              <Calendar className="w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Grand Test Simulator</h3>
-            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-              A full 300-question exam interface split in two sessions with an active countdown timer, palette overview, and estimated score readiness chart.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* AI Tutor Hero Section */}
-      <section className="bg-teal-600 text-white py-20 px-6">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12">
-          <div className="max-w-xl">
-            <h2 className="text-4xl font-extrabold tracking-tight mb-4">Meet your personal AI Medical Coach</h2>
-            <p className="text-teal-100 text-lg leading-relaxed mb-6">
-              Stuck on a complex diagnosis or metabolic pathway? Ask the tutor. Switch explanation modes on-the-fly: Simple, High-Yield FMGE, Clinical Cases, or Mnemonics.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <span className="px-3 py-1 bg-white/20 hover:bg-white/30 cursor-pointer rounded-full text-xs font-semibold">Explain Nephrotic vs Nephritic</span>
-              <span className="px-3 py-1 bg-white/20 hover:bg-white/30 cursor-pointer rounded-full text-xs font-semibold">Create mnemonics for JVP waves</span>
-              <span className="px-3 py-1 bg-white/20 hover:bg-white/30 cursor-pointer rounded-full text-xs font-semibold">Drug of choice for Eclampsia</span>
-            </div>
-          </div>
-          <div className="bg-slate-900 text-slate-100 p-6 rounded-3xl border border-white/10 w-full md:w-96 shadow-2xl flex flex-col space-y-4">
-            <div className="flex items-center space-x-3 pb-3 border-b border-slate-800">
-              <div className="w-3 h-3 rounded-full bg-teal-500 animate-pulse" />
-              <span className="text-xs font-bold text-slate-400">FMGE AI Tutor - Active</span>
-            </div>
-            <div className="text-xs text-slate-400 leading-relaxed bg-slate-950 p-3 rounded-xl font-mono border border-slate-800">
-              User: &quot;Give me a clinical scenario for organophosphate poisoning.&quot;
-            </div>
-            <div className="text-xs text-teal-300 leading-relaxed bg-teal-950/30 p-3 rounded-xl border border-teal-900/30">
-              <span className="font-bold text-white block mb-1">AI Tutor:</span>
-              A 42-year-old farmer is rushed to the ED. Symptoms: Pinpoint pupils, bradycardia, muscle twitching, and excess bronchial secretions...
-            </div>
-            <button
-              onClick={onOpenTutor}
-              className="w-full py-3 bg-teal-500 hover:bg-teal-400 text-white rounded-xl text-sm font-bold shadow-md transition-colors"
-            >
-              Try AI Tutor Sandbox
-            </button>
-          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-12 px-6 text-center border-t border-slate-800">
-        <p className="text-sm">© 2026 FMGE Master. All rights reserved.</p>
-        <p className="text-xs text-slate-500 mt-2 max-w-xl mx-auto">
-          FMGE Master is an independent preparatory platform. All educational assessments, notes, mock questions, and AI planners are for self-study and training purposes only. Medical references should be verified against standard guidelines.
-        </p>
+      <footer className="mt-auto border-t border-slate-800 px-6 md:px-12 py-8 bg-slate-950 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          FMGE Master • The Free-First AI FMGE Preparation Ecosystem.
+        </div>
+        <div>
+          Independent educational platform. Not affiliated with NBEMS or NMC.
+        </div>
       </footer>
+
     </div>
   );
 };

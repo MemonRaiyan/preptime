@@ -1,164 +1,294 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
-import { SUBJECTS } from '../data/mockDb';
-import { Brain, Star, Award, RotateCw, CheckCircle, ChevronRight, Eye } from 'lucide-react';
+import { Flashcard } from '../types/database';
+import { SUBJECTS, TOPICS } from '../data/mockDb';
+import { 
+  Brain, RotateCcw, CheckCircle2, Sparkles, Plus, 
+  Layers, ArrowRight, HelpCircle, Eye, EyeOff 
+} from 'lucide-react';
 
 export const FlashcardsView: React.FC = () => {
-  const { flashcards, reviewFlashcard } = useApp();
-  
-  // Get active queue: Cards due today (nextReviewDate <= today)
-  const todayStr = new Date().toISOString().split('T')[0];
-  const dueCards = flashcards.filter(c => c.nextReviewDate <= todayStr);
-  const reviewedTodayCount = flashcards.filter(c => c.nextReviewDate > todayStr).length;
+  const { flashcards, reviewFlashcard, createFlashcard, profile } = useApp();
 
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [selectedSubject, setSelectedSubject] = useState<string>('all');
+  const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
   const [isFlipped, setIsFlipped] = useState<boolean>(false);
+  
+  // Custom Card Creator modal
+  const [showCreatorModal, setShowCreatorModal] = useState<boolean>(false);
+  const [newFront, setNewFront] = useState<string>('');
+  const [newBack, setNewBack] = useState<string>('');
+  const [newSubject, setNewSubject] = useState<string>('pharmacology');
 
-  const activeCard = dueCards[currentIndex];
+  // Filter cards due for review or by subject
+  const filteredCards = useMemo(() => {
+    return flashcards.filter(c => {
+      if (selectedSubject !== 'all' && c.subjectId !== selectedSubject) return false;
+      return true;
+    });
+  }, [flashcards, selectedSubject]);
 
-  const handleRating = (rating: 'again' | 'hard' | 'good' | 'easy') => {
-    if (!activeCard) return;
-    reviewFlashcard(activeCard.id, rating);
+  const currentCard = filteredCards[currentCardIndex] || filteredCards[0];
+
+  const handleReviewRating = (rating: 'again' | 'hard' | 'good' | 'easy') => {
+    if (!currentCard) return;
+    reviewFlashcard(currentCard.id, rating);
     setIsFlipped(false);
-    
-    // If there are more cards, slide to next, otherwise done
-    if (currentIndex < dueCards.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+
+    if (currentCardIndex < filteredCards.length - 1) {
+      setCurrentCardIndex(prev => prev + 1);
     } else {
-      // Completed current batch
-      setCurrentIndex(0);
+      setCurrentCardIndex(0);
     }
   };
 
-  const getSubjectName = (subId: string) => {
-    return SUBJECTS.find(s => s.id === subId)?.name || subId;
+  const handleCreateSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFront.trim() || !newBack.trim()) return;
+
+    createFlashcard({
+      subjectId: newSubject,
+      topicId: `${newSubject}-user-topic`,
+      front: newFront,
+      back: newBack,
+      difficulty: 'good',
+      intervalDays: 1,
+      easeFactor: 2.5
+    });
+
+    setNewFront('');
+    setNewBack('');
+    setShowCreatorModal(false);
   };
 
   return (
-    <div className="space-y-8 pb-20">
-      {/* Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-teal-900 via-teal-950 to-emerald-950 p-8 rounded-3xl border border-teal-800 text-white shadow-xl">
-        <div className="space-y-2">
-          <div className="inline-flex items-center space-x-2 bg-white/10 px-3 py-1 rounded-full text-xs font-bold text-teal-300 border border-white/10">
-            <Brain className="w-3.5 h-3.5 fill-current" />
-            <span>Spaced Repetition Active (Anki style)</span>
+    <div className="max-w-4xl mx-auto space-y-8 animate-fade-in pb-16">
+      
+      {/* Header Banner */}
+      <div className="bg-gradient-to-r from-purple-700 via-indigo-800 to-slate-900 rounded-3xl p-6 md:p-10 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="space-y-3 max-w-2xl">
+          <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-purple-200">
+            <Brain className="w-3.5 h-3.5" />
+            <span>SuperMemo-2 Spaced Repetition Engine</span>
           </div>
-          <h1 className="text-3xl font-black tracking-tight">Active Flashcards</h1>
-          <p className="text-teal-200 text-sm max-w-md">
-            Revise key medical facts, clinical presentations, and drug of choices at optimized intervals to avoid forgetting curves.
+          <h1 className="text-2xl md:text-4xl font-black tracking-tight text-white">
+            FMGE Spaced Repetition Deck
+          </h1>
+          <p className="text-xs md:text-sm text-slate-200 leading-relaxed">
+            Never forget previously studied topics. Automatically scheduled reviews on Day 1, 3, 7, 14, 30, and 60 based on your recall ease rating.
           </p>
         </div>
 
-        <div className="flex space-x-4 bg-white/5 border border-white/10 backdrop-blur-md px-6 py-4 rounded-2xl text-center shrink-0">
-          <div>
-            <span className="block text-2xl font-black text-teal-400">{dueCards.length}</span>
-            <span className="text-4xs text-slate-400 font-bold uppercase tracking-wider">Due Today</span>
-          </div>
-          <div className="h-8 w-px bg-white/10" />
-          <div>
-            <span className="block text-2xl font-black text-emerald-400">{reviewedTodayCount}</span>
-            <span className="text-4xs text-slate-400 font-bold uppercase tracking-wider">Reviewed</span>
-          </div>
-        </div>
+        <button
+          onClick={() => setShowCreatorModal(true)}
+          className="bg-white hover:bg-slate-100 text-slate-900 px-6 py-3.5 rounded-2xl font-black text-xs shadow-xl transition-all flex items-center space-x-2 shrink-0"
+        >
+          <Plus className="w-4 h-4 text-purple-600" />
+          <span>Add Custom Card</span>
+        </button>
       </div>
 
-      {dueCards.length === 0 ? (
-        // Batch completed screen
-        <div className="bg-white dark:bg-slate-900 p-12 rounded-3xl border border-slate-200 dark:border-slate-800 text-center max-w-md mx-auto space-y-4">
-          <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-650 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-900/40">
-            <CheckCircle className="w-8 h-8" />
-          </div>
-          <h2 className="text-xl font-bold text-slate-850 dark:text-white">Deck Clear for Today!</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-            Congratulations! You have completed all flashcards scheduled for review today. Keep it up!
-          </p>
-          <span className="text-3xs block text-slate-400">
-            Next review queue will trigger tomorrow morning.
-          </span>
-        </div>
-      ) : (
-        // Active Flashcard review screen
-        <div className="max-w-2xl mx-auto space-y-8">
-          
-          <div className="flex items-center justify-between px-2">
-            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-              Card {currentIndex + 1} of {dueCards.length}
-            </span>
-            <span className="text-4xs font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/20 px-3 py-1.5 rounded-full border border-teal-100 dark:border-teal-900/30">
-              {getSubjectName(activeCard.subjectId)}
-            </span>
-          </div>
+      {/* Subject Filter Bar */}
+      <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-none text-xs font-bold">
+        <button
+          onClick={() => {
+            setSelectedSubject('all');
+            setCurrentCardIndex(0);
+            setIsFlipped(false);
+          }}
+          className={`px-4 py-2 rounded-2xl whitespace-nowrap transition-all ${
+            selectedSubject === 'all'
+              ? 'bg-purple-600 text-white shadow-md'
+              : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+          }`}
+        >
+          All Subjects ({flashcards.length})
+        </button>
 
-          {/* Flashcard container with 3D Flip effect placeholder */}
-          <div 
-            onClick={() => setIsFlipped(!isFlipped)}
-            className="w-full h-80 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-lg p-8 flex flex-col justify-between cursor-pointer hover:shadow-xl active:scale-99 transition-all text-center relative overflow-hidden"
+        {SUBJECTS.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => {
+              setSelectedSubject(s.id);
+              setCurrentCardIndex(0);
+              setIsFlipped(false);
+            }}
+            className={`px-4 py-2 rounded-2xl whitespace-nowrap transition-all ${
+              selectedSubject === s.id
+                ? 'bg-purple-600 text-white shadow-md'
+                : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+            }`}
           >
-            {/* Soft decorative background glow */}
-            <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-teal-400/5 blur-2xl" />
-            <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-blue-400/5 blur-2xl" />
+            {s.name}
+          </button>
+        ))}
+      </div>
 
-            <div className="text-4xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block pt-2">
-              {isFlipped ? 'Answer Detail (Back)' : 'Medical Term (Front)'}
+      {/* Main Flashcard View */}
+      {currentCard ? (
+        <div className="space-y-6">
+          
+          {/* Card Counter & Progress */}
+          <div className="flex items-center justify-between text-2xs font-extrabold text-slate-400 uppercase tracking-wider">
+            <span>Card {currentCardIndex + 1} of {filteredCards.length}</span>
+            <span>Interval: {currentCard.intervalDays} Days • Ease: {currentCard.easeFactor.toFixed(2)}</span>
+          </div>
+
+          {/* Interactive Flip Card */}
+          <div
+            onClick={() => setIsFlipped(prev => !prev)}
+            className="min-h-[320px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 md:p-12 shadow-sm hover:shadow-xl hover:border-purple-500/50 cursor-pointer transition-all flex flex-col justify-between select-none relative overflow-hidden"
+          >
+            {/* Flip hint */}
+            <div className="flex items-center justify-between">
+              <span className="text-3xs font-extrabold uppercase px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                {isFlipped ? 'Answer & Rationale' : 'Question Prompt'}
+              </span>
+              <span className="text-3xs text-slate-400 font-bold flex items-center space-x-1">
+                {isFlipped ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                <span>Click card to {isFlipped ? 'hide answer' : 'flip'}</span>
+              </span>
             </div>
 
-            {/* Content text */}
-            <div className="flex-1 flex items-center justify-center px-4 my-6">
+            {/* Card Content Text */}
+            <div className="my-auto py-6">
               {isFlipped ? (
-                <p className="text-base md:text-lg font-extrabold text-slate-850 dark:text-white leading-relaxed">
-                  {activeCard.back}
-                </p>
+                <div className="prose dark:prose-invert prose-sm max-w-none text-slate-900 dark:text-white leading-relaxed font-medium">
+                  <p className="text-base md:text-lg">{currentCard.back.replace(/[*#]/g, '')}</p>
+                </div>
               ) : (
-                <p className="text-sm md:text-base font-semibold text-slate-700 dark:text-slate-355 text-slate-650 leading-relaxed">
-                  {activeCard.front}
-                </p>
+                <h3 className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white leading-relaxed">
+                  {currentCard.front}
+                </h3>
               )}
             </div>
 
-            <div className="flex justify-center items-center text-4xs font-bold text-slate-400 uppercase tracking-wider border-t border-slate-100 dark:border-slate-850 pt-4">
-              <Eye className="w-3.5 h-3.5 mr-1" />
-              <span>Tap card to reveal description</span>
+            <div className="text-2xs text-slate-400 text-center font-mono">
+              FMGE Master Spaced Repetition
             </div>
           </div>
 
-          {/* Review grading options */}
-          {isFlipped && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-slate-100 dark:border-slate-850 animate-pulse-slow">
+          {/* SuperMemo-2 4-Rating Buttons */}
+          {isFlipped ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 animate-scale-up">
               <button
-                onClick={() => handleRating('again')}
-                className="py-3 bg-rose-500 text-white rounded-2xl font-bold text-xs hover:bg-rose-600 shadow-md shadow-rose-500/10 active:scale-95 transition-all flex flex-col items-center justify-center space-y-1"
+                onClick={() => handleReviewRating('again')}
+                className="p-4 rounded-2xl bg-rose-500/10 hover:bg-rose-500 border border-rose-500/30 hover:border-rose-500 text-rose-700 dark:text-rose-300 hover:text-white transition-all text-center space-y-1"
               >
-                <span>Again</span>
-                <span className="text-4xs opacity-80 normal-case font-normal">(1 min)</span>
+                <div className="font-black text-sm">Again</div>
+                <div className="text-3xs opacity-80">1 Day (Reset)</div>
               </button>
+
               <button
-                onClick={() => handleRating('hard')}
-                className="py-3 bg-amber-500 text-white rounded-2xl font-bold text-xs hover:bg-amber-600 shadow-md shadow-amber-500/10 active:scale-95 transition-all flex flex-col items-center justify-center space-y-1"
+                onClick={() => handleReviewRating('hard')}
+                className="p-4 rounded-2xl bg-amber-500/10 hover:bg-amber-500 border border-amber-500/30 hover:border-amber-500 text-amber-700 dark:text-amber-300 hover:text-white transition-all text-center space-y-1"
               >
-                <span>Hard</span>
-                <span className="text-4xs opacity-80 normal-case font-normal">(2 days)</span>
+                <div className="font-black text-sm">Hard</div>
+                <div className="text-3xs opacity-80">2 Days</div>
               </button>
+
               <button
-                onClick={() => handleRating('good')}
-                className="py-3 bg-teal-600 text-white rounded-2xl font-bold text-xs hover:bg-teal-500 shadow-md shadow-teal-500/10 active:scale-95 transition-all flex flex-col items-center justify-center space-y-1"
+                onClick={() => handleReviewRating('good')}
+                className="p-4 rounded-2xl bg-teal-500/10 hover:bg-teal-500 border border-teal-500/30 hover:border-teal-500 text-teal-700 dark:text-teal-300 hover:text-white transition-all text-center space-y-1"
               >
-                <span>Good</span>
-                <span className="text-4xs opacity-80 normal-case font-normal">(4 days)</span>
+                <div className="font-black text-sm">Good</div>
+                <div className="text-3xs opacity-80">4 Days</div>
               </button>
+
               <button
-                onClick={() => handleRating('easy')}
-                className="py-3 bg-blue-600 text-white rounded-2xl font-bold text-xs hover:bg-blue-500 shadow-md shadow-blue-500/10 active:scale-95 transition-all flex flex-col items-center justify-center space-y-1"
+                onClick={() => handleReviewRating('easy')}
+                className="p-4 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/30 hover:border-emerald-500 text-emerald-700 dark:text-emerald-300 hover:text-white transition-all text-center space-y-1"
               >
-                <span>Easy</span>
-                <span className="text-4xs opacity-80 normal-case font-normal">(6 days)</span>
+                <div className="font-black text-sm">Easy</div>
+                <div className="text-3xs opacity-80">7+ Days</div>
               </button>
             </div>
+          ) : (
+            <button
+              onClick={() => setIsFlipped(true)}
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-purple-600/10 transition-all text-xs"
+            >
+              Show Answer (Spacebar / Click)
+            </button>
           )}
 
         </div>
+      ) : (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center space-y-3">
+          <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
+          <h3 className="font-bold text-slate-900 dark:text-white">All Cards Reviewed for Today!</h3>
+          <p className="text-xs text-slate-400">Great recall discipline. Check back tomorrow for your next spaced review interval.</p>
+        </div>
       )}
+
+      {/* Custom Flashcard Creator Modal */}
+      {showCreatorModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 max-w-lg w-full space-y-4 animate-scale-up">
+            <h3 className="font-bold text-base text-slate-900 dark:text-white">
+              Create New Custom Flashcard
+            </h3>
+
+            <form onSubmit={handleCreateSubmit} className="space-y-3 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Subject</label>
+                <select
+                  value={newSubject}
+                  onChange={(e) => setNewSubject(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-white outline-none"
+                >
+                  {SUBJECTS.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Front (Question Prompt) *</label>
+                <textarea
+                  required
+                  rows={2}
+                  value={newFront}
+                  onChange={(e) => setNewFront(e.target.value)}
+                  placeholder="e.g. What is the drug of choice for MRSA infection?"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-slate-900 dark:text-white outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Back (High Yield Answer) *</label>
+                <textarea
+                  required
+                  rows={3}
+                  value={newBack}
+                  onChange={(e) => setNewBack(e.target.value)}
+                  placeholder="e.g. Vancomycin (or Daptomycin / Linezolid)"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-slate-900 dark:text-white outline-none"
+                />
+              </div>
+
+              <div className="flex space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCreatorModal(false)}
+                  className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 py-2.5 rounded-xl font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2.5 rounded-xl font-bold shadow-md"
+                >
+                  Save Card
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

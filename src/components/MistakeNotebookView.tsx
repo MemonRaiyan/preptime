@@ -1,229 +1,282 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
-import { QUESTIONS, SUBJECTS } from '../data/mockDb';
 import { MistakeCategory } from '../types/database';
+import { QUESTIONS, SUBJECTS } from '../data/mockDb';
 import { 
-  AlertTriangle, Brain, AlertCircle, RefreshCw, BarChart2, 
-  HelpCircle, ChevronRight, PenTool, CheckCircle, Flame 
+  AlertTriangle, CheckCircle2, RotateCcw, Brain, Sparkles, 
+  HelpCircle, ArrowRight, ShieldCheck, Filter, Trash2 
 } from 'lucide-react';
 
 export const MistakeNotebookView: React.FC = () => {
-  const { attempts, categorizeMistake, setActiveTab } = useApp();
+  const { attempts, categorizeMistake, addAttempt, navigateToTopic, setActiveTab } = useApp();
 
-  // Find incorrect attempts and match them to questions
-  const mistakes = attempts.filter(att => !att.isCorrect).map(att => {
-    const question = QUESTIONS.find(q => q.id === att.questionId);
-    return {
-      attempt: att,
-      question
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('all');
+  const [selectedSubjectFilter, setSelectedSubjectFilter] = useState<string>('all');
+
+  // Filter only incorrect attempts
+  const mistakeAttempts = useMemo(() => {
+    return attempts.filter(att => !att.isCorrect);
+  }, [attempts]);
+
+  // Aggregate repeated mistake frequency by system/topic (Section 17)
+  const repeatedMistakeFrequencies = useMemo(() => {
+    const freqs: { [key: string]: { count: number; name: string; subjectId: string; topicId: string } } = {
+      'Autonomic Pharmacology (Beta Blockers)': { count: 7, name: 'Beta Blockers & ANS Pharmacology', subjectId: 'pharmacology', topicId: 'autonomic-drugs' },
+      'Renal Glomerulopathies (Nephrotic Syndrome)': { count: 5, name: 'Nephrotic vs Nephritic Syndromes', subjectId: 'pathology', topicId: 'nephrotic-syndrome' },
+      'PSM Epidemiological Study Designs': { count: 8, name: 'Epidemiological Measures & Study Designs', subjectId: 'psm', topicId: 'epidemiology-study-designs' }
     };
-  }).filter(m => m.question !== undefined); // filter out invalid questions
 
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+    mistakeAttempts.forEach(att => {
+      const q = QUESTIONS.find(qu => qu.id === att.questionId);
+      if (q) {
+        const key = q.systemName;
+        if (!freqs[key]) {
+          freqs[key] = { count: 1, name: q.systemName, subjectId: q.subjectId, topicId: q.topicId };
+        } else {
+          freqs[key].count += 1;
+        }
+      }
+    });
 
-  // Group stats
-  const totalMistakes = mistakes.length;
-  const categories: { id: MistakeCategory; label: string; color: string; desc: string }[] = [
-    { id: 'concept', label: 'Concept Mistake', color: 'bg-rose-500', desc: 'Need to review notes & pathophysiology' },
-    { id: 'memory', label: 'Memory Mistake', color: 'bg-amber-500', desc: 'Forgot active recall or drug of choice' },
-    { id: 'misread', label: 'Misread Question', color: 'bg-indigo-500', desc: 'Missed keywords like "EXCEPT" or "MOST"' },
-    { id: 'silly', label: 'Silly Mistake', color: 'bg-blue-500', desc: 'Accidental click or calculation error' },
-    { id: 'guess', label: 'Educated Guess', color: 'bg-teal-500', desc: 'Gave a shot on 50/50 options' }
-  ];
+    return Object.values(freqs).sort((a, b) => b.count - a.count);
+  }, [mistakeAttempts]);
 
-  const categoryCounts = mistakes.reduce((acc, curr) => {
-    const cat = curr.attempt.mistakeCategory || 'concept';
-    acc[cat] = (acc[cat] || 0) + 1;
-    return acc;
-  }, {} as { [key in MistakeCategory]?: number });
-
-  const getSubjectName = (subId: string) => {
-    return SUBJECTS.find(s => s.id === subId)?.name || subId;
-  };
+  // Filtered mistake list
+  const filteredMistakes = useMemo(() => {
+    return mistakeAttempts.filter(att => {
+      if (activeCategoryFilter !== 'all' && att.mistakeCategory !== activeCategoryFilter) return false;
+      const q = QUESTIONS.find(qu => qu.id === att.questionId);
+      if (selectedSubjectFilter !== 'all' && q?.subjectId !== selectedSubjectFilter) return false;
+      return true;
+    });
+  }, [mistakeAttempts, activeCategoryFilter, selectedSubjectFilter]);
 
   return (
-    <div className="space-y-8 pb-20">
-      {/* Top Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-rose-900 to-rose-950 p-8 rounded-3xl border border-rose-800 text-white shadow-xl">
-        <div className="space-y-2">
-          <div className="inline-flex items-center space-x-2 bg-white/10 px-3 py-1 rounded-full text-xs font-bold text-rose-300 border border-white/10">
-            <AlertTriangle className="w-3.5 h-3.5 fill-current" />
-            <span>Smart Revision Hub</span>
+    <div className="space-y-8 animate-fade-in pb-16">
+      
+      {/* Header Banner */}
+      <div className="bg-gradient-to-r from-rose-600 via-rose-700 to-indigo-900 rounded-3xl p-6 md:p-10 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="space-y-3 max-w-2xl">
+          <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-rose-200">
+            <AlertTriangle className="w-3.5 h-3.5" />
+            <span>AI Root-Cause Mistake Engine</span>
           </div>
-          <h1 className="text-3xl font-black tracking-tight">Mistake Notebook</h1>
-          <p className="text-rose-105 text-rose-200 text-sm max-w-md">
-            Do not run away from incorrect answers. Categorize your errors to see patterns and study target weaknesses.
+          <h1 className="text-2xl md:text-4xl font-black tracking-tight text-white">
+            Mistake Notebook ("My Mistakes")
+          </h1>
+          <p className="text-xs md:text-sm text-rose-100 leading-relaxed">
+            Every incorrect question is automatically logged, categorized by root cause, and tracked for repeated errors so you never repeat the same mistake on exam day.
           </p>
         </div>
 
-        {totalMistakes > 0 && (
-          <button
-            onClick={() => setActiveTab('practice')}
-            className="px-6 py-3.5 bg-white text-rose-900 hover:bg-rose-50 rounded-2xl text-xs font-extrabold shadow-lg active:scale-95 transition-all flex items-center space-x-2 shrink-0"
+        <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-center shrink-0 space-y-1">
+          <span className="text-3xs font-extrabold uppercase text-rose-200">Total Logged Mistakes</span>
+          <div className="text-3xl font-black text-white">{mistakeAttempts.length}</div>
+          <span className="text-3xs text-rose-100">Ready for Targeted Drill</span>
+        </div>
+      </div>
+
+      {/* Section 17: Repeated Mistake Frequency Tracker */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-4">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold">
+            <RotateCcw className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-bold text-base text-slate-900 dark:text-white">
+              AI Detected Repeated Trap Patterns
+            </h3>
+            <p className="text-2xs text-slate-400">
+              Topics where you have frequently chosen incorrect options across practice drills and tests.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+          {repeatedMistakeFrequencies.slice(0, 3).map((item, idx) => (
+            <div
+              key={idx}
+              className="p-4 rounded-2xl bg-rose-500/5 dark:bg-rose-950/20 border border-rose-500/20 flex flex-col justify-between space-y-3"
+            >
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-3xs font-extrabold px-2 py-0.5 rounded bg-rose-500/20 text-rose-700 dark:text-rose-300">
+                    Failed {item.count} Times
+                  </span>
+                  <span className="text-3xs text-slate-400 font-bold uppercase">{item.subjectId}</span>
+                </div>
+                <h4 className="font-bold text-xs text-slate-900 dark:text-white pt-1">
+                  {item.name}
+                </h4>
+              </div>
+
+              <button
+                onClick={() => navigateToTopic(item.subjectId, item.topicId)}
+                className="w-full bg-rose-600 hover:bg-rose-700 text-white py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 shadow-sm"
+              >
+                <span>Launch Remedial Revision</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Filter and Categorization Tabs */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4">
+        
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          
+          {/* Category Tabs */}
+          <div className="flex items-center space-x-2 overflow-x-auto scrollbar-none text-xs font-bold">
+            <button
+              onClick={() => setActiveCategoryFilter('all')}
+              className={`px-3 py-1.5 rounded-xl transition-all ${
+                activeCategoryFilter === 'all'
+                  ? 'bg-rose-600 text-white shadow-sm'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+              }`}
+            >
+              All Mistakes ({mistakeAttempts.length})
+            </button>
+            {(['concept', 'memory', 'misread', 'silly', 'guess'] as MistakeCategory[]).map(cat => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategoryFilter(cat)}
+                className={`px-3 py-1.5 rounded-xl capitalize transition-all ${
+                  activeCategoryFilter === cat
+                    ? 'bg-rose-600 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                }`}
+              >
+                {cat} Mistakes
+              </button>
+            ))}
+          </div>
+
+          {/* Subject Filter */}
+          <select
+            value={selectedSubjectFilter}
+            onChange={(e) => setSelectedSubjectFilter(e.target.value)}
+            className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 outline-none"
           >
-            <PenTool className="w-4 h-4" />
-            <span>Launch Mistake Test ({totalMistakes})</span>
-          </button>
+            <option value="all">All Subjects</option>
+            {SUBJECTS.map(s => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+
+        </div>
+
+      </div>
+
+      {/* Mistake Items List */}
+      <div className="space-y-4">
+        {filteredMistakes.length === 0 ? (
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center space-y-3">
+            <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+            <h3 className="font-bold text-slate-900 dark:text-white text-base">
+              No Mistakes in this Category!
+            </h3>
+            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+              Great work! Solve more questions in the Practice Arena or Grand Test Simulator to discover any remaining blindspots.
+            </p>
+            <button
+              onClick={() => setActiveTab('practice')}
+              className="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-2xl text-xs font-bold shadow-md transition-all"
+            >
+              Go to Practice Arena
+            </button>
+          </div>
+        ) : (
+          filteredMistakes.map((att) => {
+            const q = QUESTIONS.find(qu => qu.id === att.questionId);
+            if (!q) return null;
+
+            return (
+              <div
+                key={att.id}
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-4"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-2xs font-extrabold px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-600">
+                      {att.mistakeCategory ? `${att.mistakeCategory.toUpperCase()} MISTAKE` : 'CONCEPT MISTAKE'}
+                    </span>
+                    <span className="text-2xs text-slate-400 font-bold">{q.systemName}</span>
+                  </div>
+                  <span className="text-3xs text-slate-400">
+                    Logged {new Date(att.timestamp).toLocaleDateString()}
+                  </span>
+                </div>
+
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                  {q.questionText}
+                </h3>
+
+                {/* Answer comparison */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-300 font-semibold flex items-center space-x-2">
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    <span>Your Choice: {q.options[att.selectedOptionIndex] || 'Option ' + String.fromCharCode(65 + att.selectedOptionIndex)}</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-semibold flex items-center space-x-2">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>Correct Answer: {q.options[q.correctAnswerIndex]}</span>
+                  </div>
+                </div>
+
+                {/* Explanation */}
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2 text-xs">
+                  <span className="font-bold text-slate-900 dark:text-white block">
+                    Medical Rationale:
+                  </span>
+                  <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+                    {q.explanation}
+                  </p>
+                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-2xs text-amber-800 dark:text-amber-300 font-bold">
+                    💡 High Yield Point: {q.highYieldPoint}
+                  </div>
+                </div>
+
+                {/* Categorize & Re-test Actions */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                  <div className="flex items-center space-x-1.5 text-2xs">
+                    <span className="font-bold text-slate-400">Change Category:</span>
+                    {(['concept', 'memory', 'misread', 'silly', 'guess'] as MistakeCategory[]).map(cat => (
+                      <button
+                        key={cat}
+                        onClick={() => categorizeMistake(att.id, cat)}
+                        className={`px-2 py-0.5 rounded capitalize font-bold transition-all ${
+                          att.mistakeCategory === cat
+                            ? 'bg-rose-600 text-white'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => navigateToTopic(q.subjectId, q.topicId)}
+                    className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-sm transition-all"
+                  >
+                    <span>Read Topic High-Yield Notes</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+              </div>
+            );
+          })
         )}
       </div>
 
-      {totalMistakes === 0 ? (
-        // Empty state
-        <div className="bg-white dark:bg-slate-900 p-12 rounded-3xl border border-slate-200 dark:border-slate-800 text-center max-w-md mx-auto space-y-4">
-          <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-650 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-900/40">
-            <CheckCircle className="w-8 h-8" />
-          </div>
-          <h2 className="text-xl font-bold text-slate-850 dark:text-white">Notebook is Clean!</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-            Awesome job! You have not logged any mistakes. Jump to Practice Arena to start your diagnostics.
-          </p>
-          <button
-            onClick={() => setActiveTab('practice')}
-            className="w-full py-3 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 rounded-xl text-xs font-bold transition-colors"
-          >
-            Go to Practice Arena
-          </button>
-        </div>
-      ) : (
-        // Mistake Notebook Dashboard
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Left panel: Category distribution analysis */}
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm h-fit space-y-6">
-            <div>
-              <h3 className="font-bold text-sm text-slate-850 dark:text-white mb-2">Failure Category Distribution</h3>
-              <p className="text-4xs text-slate-400 font-bold uppercase tracking-wider">Categorization helps pinpoint habit loop changes</p>
-            </div>
-
-            {/* Custom visual progress bar */}
-            <div className="space-y-4">
-              {categories.map((cat) => {
-                const count = categoryCounts[cat.id] || 0;
-                const percentage = Math.round((count / totalMistakes) * 100);
-                return (
-                  <div key={cat.id} className="space-y-1">
-                    <div className="flex justify-between text-2xs font-bold text-slate-600 dark:text-slate-400">
-                      <span>{cat.label}</span>
-                      <span className="text-slate-850 dark:text-slate-250">{count} ({percentage}%)</span>
-                    </div>
-                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden flex">
-                      <div 
-                        className={`${cat.color} h-full rounded-full transition-all duration-300`}
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                    <span className="text-4xs text-slate-400 block">{cat.desc}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Right panel: Mistakes list explorer */}
-          <div className="lg:col-span-2 space-y-4">
-            <h3 className="font-bold text-sm text-slate-850 dark:text-white mb-2">Log Registry ({totalMistakes} incorrect responses)</h3>
-            
-            <div className="space-y-3">
-              {mistakes.map((item, idx) => {
-                const q = item.question!;
-                const isExpanded = expandedIndex === idx;
-                const activeCategory = item.attempt.mistakeCategory || 'concept';
-                
-                return (
-                  <div 
-                    key={item.attempt.id}
-                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden transition-all shadow-sm"
-                  >
-                    {/* Collapsed Header */}
-                    <div 
-                      onClick={() => setExpandedIndex(isExpanded ? null : idx)}
-                      className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 dark:hover:bg-slate-950/20"
-                    >
-                      <div className="space-y-1 overflow-hidden pr-4">
-                        <span className="block text-4xs font-bold uppercase tracking-wider text-teal-650 dark:text-teal-400">
-                          {getSubjectName(q.subjectId)} • {q.systemName}
-                        </span>
-                        <p className="text-xs font-bold text-slate-850 dark:text-white truncate">
-                          {q.questionText}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center space-x-3 shrink-0">
-                        <span className={`text-4xs font-extrabold uppercase px-2.5 py-1.5 rounded-md text-white ${
-                          categories.find(c => c.id === activeCategory)?.color || 'bg-rose-500'
-                        }`}>
-                          {activeCategory}
-                        </span>
-                        <ChevronRight className={`w-4 h-4 text-slate-400 transition-all ${isExpanded ? 'rotate-90' : ''}`} />
-                      </div>
-                    </div>
-
-                    {/* Expanded Detail Panel */}
-                    {isExpanded && (
-                      <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-950/10 space-y-6">
-                        {/* Question text */}
-                        <div className="space-y-2">
-                          <span className="text-2xs font-extrabold uppercase text-slate-500">Question Body</span>
-                          <p className="text-xs md:text-sm font-semibold text-slate-800 dark:text-slate-300 leading-relaxed">
-                            {q.questionText}
-                          </p>
-                        </div>
-
-                        {/* Answers comparison */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="p-4 border border-rose-250 bg-rose-500/5 rounded-xl border border-rose-100 dark:border-rose-950/10">
-                            <span className="block text-4xs font-extrabold uppercase tracking-wider text-rose-500 mb-1">Your Answer</span>
-                            <span className="text-xs font-bold text-rose-700 dark:text-rose-400">
-                              {q.options[item.attempt.selectedOptionIndex]}
-                            </span>
-                          </div>
-                          <div className="p-4 border border-emerald-250 bg-emerald-500/5 rounded-xl border border-emerald-100 dark:border-emerald-950/10">
-                            <span className="block text-4xs font-extrabold uppercase tracking-wider text-emerald-500 mb-1">Correct Answer</span>
-                            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
-                              {q.options[q.correctAnswerIndex]}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Mistake categorization modifier */}
-                        <div className="space-y-3">
-                          <span className="block text-2xs font-extrabold uppercase text-slate-500">Change Error Classification:</span>
-                          <div className="flex flex-wrap gap-2">
-                            {categories.map((cat) => (
-                              <button
-                                key={cat.id}
-                                onClick={() => categorizeMistake(item.attempt.id, cat.id)}
-                                className={`px-3 py-1.5 rounded-full text-3xs font-extrabold tracking-wide uppercase transition-all ${
-                                  activeCategory === cat.id
-                                    ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border border-slate-900 dark:border-white shadow-sm'
-                                    : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50'
-                                }`}
-                              >
-                                {cat.label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Detailed explanation */}
-                        <div className="p-4 bg-teal-50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-900/40 rounded-xl space-y-1.5">
-                          <span className="block text-2xs font-extrabold uppercase tracking-wider text-teal-700 dark:text-teal-400">Explanation Review</span>
-                          <p className="text-xs text-slate-700 dark:text-slate-350 leading-relaxed">
-                            {q.explanation}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-        </div>
-      )}
     </div>
   );
 };

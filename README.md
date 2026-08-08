@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FMGE MASTER 🩺
 
-## Getting Started
+**"Everything you need to prepare for FMGE, in one free and open-source platform."**
 
-First, run the development server:
+Welcome to the **FMGE Master** repository! This is a 100% free, open-source, and community-driven ecosystem designed specifically for the Foreign Medical Graduate Examination (FMGE). We believe medical education should be accessible to everyone without paywalls, premium tiers, or hidden fees.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🌟 Core Principles
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. **Free Forever:** No subscriptions, no payment gateways, no premium content. The entire platform is built around free education.
+2. **Open-Source:** The codebase is open for the community to inspect, improve, and deploy.
+3. **FMGE Only:** Laser-focused strictly on FMGE requirements. No NEET, JEE, or UPSC clutter.
+4. **Legal & Ethical Content:** We do not host pirated materials. We integrate with verified, open-access, and public domain resources.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Personalized Dashboard:** Track progress, XP, and streaks.
+- **Smart Notes & Flashcards:** SuperMemo-2 spaced repetition integrated.
+- **AI Tutor:** Context-aware AI assistant utilizing local and open-source models for RAG.
+- **Grand Test Simulator:** Full 300 MCQ simulation with analytics.
+- **Mistake Notebook:** Categorize and review errors efficiently.
+- **Clinical Case Vignettes:** Practice high-yield clinical scenarios.
 
-## Learn More
+## 🛠️ Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
+- **Framework:** Next.js (App Router), React, TypeScript
+- **Styling:** Tailwind CSS, shadcn/ui
+- **Database:** PostgreSQL (Supabase) + pgvector for RAG
+- **State Management:** React Context API
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 💻 Getting Started (Local Development)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/fmge-master/fmge-master.git
+   cd fmge-master
+   ```
 
-## Deploy on Vercel
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. **Set up environment variables:**
+   Create a `.env.local` file and add necessary keys (e.g., Supabase URL, AI API keys).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+
+## 🤝 Contributing
+
+We welcome contributions from developers, doctors, and students! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
