@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { 
   UserProfile, QuestionAttempt, MistakeCategory, Flashcard, ClinicalCase, 
   DailyTask, StudyPlan, Resource, FeatureFlags, GrandTestAttempt, 
-  SupportedLanguage, CommunityPost 
+  SupportedLanguage, CommunityPost, GrandTest
 } from '../types/database';
 import { 
   FLASHCARDS, QUESTIONS, FREE_RESOURCES, DEFAULT_FEATURE_FLAGS, 
@@ -49,6 +49,11 @@ interface AppContextType {
   resources: Resource[];
   addResource: (resource: Omit<Resource, 'id' | 'publishedDate' | 'lastChecked'>) => void;
   verifyResource: (id: string) => void;
+  
+  userUploadedResources: Resource[];
+  uploadUserResource: (resource: Resource) => void;
+  userGeneratedSimulators: any[];
+  addUserSimulator: (simulator: any) => void;
   
   // Grand Test Simulations & Analytics
   gtAttempts: GrandTestAttempt[];
@@ -99,6 +104,8 @@ const RESOURCES_KEY = 'fmge_master_resources_v2';
 const GT_KEY = 'fmge_master_gt_v2';
 const FLAGS_KEY = 'fmge_master_flags_v2';
 const COMMUNITY_KEY = 'fmge_master_community_v2';
+const USER_UPLOADS_KEY = 'fmge_master_user_uploads_v2';
+const USER_SIMULATORS_KEY = 'fmge_master_user_simulators_v2';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -111,6 +118,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [featureFlags, setFeatureFlags] = useState<FeatureFlags>(DEFAULT_FEATURE_FLAGS);
   const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>(SAMPLE_COMMUNITY_POSTS);
   
+  const [userUploadedResources, setUserUploadedResources] = useState<Resource[]>([]);
+  const [userGeneratedSimulators, setUserGeneratedSimulators] = useState<GrandTest[]>([]);
   const [activeTab, setActiveTabState] = useState<string>('dashboard');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
@@ -141,10 +150,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const savedGt = localStorage.getItem(GT_KEY);
       const savedFlags = localStorage.getItem(FLAGS_KEY);
       const savedCommunity = localStorage.getItem(COMMUNITY_KEY);
+      const savedUserUploads = localStorage.getItem(USER_UPLOADS_KEY);
+      const savedUserSimulators = localStorage.getItem(USER_SIMULATORS_KEY);
       const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
 
       if (savedProfile) setProfile(JSON.parse(savedProfile));
       if (savedAttempts) setAttempts(JSON.parse(savedAttempts));
+      if (savedUserUploads) setUserUploadedResources(JSON.parse(savedUserUploads));
+      if (savedUserSimulators) setUserGeneratedSimulators(JSON.parse(savedUserSimulators));
       
       if (savedFlashcards) {
         setFlashcards(JSON.parse(savedFlashcards));
@@ -757,6 +770,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setActiveTabState('dashboard');
   };
 
+  const uploadUserResource = (resource: Resource) => {
+    const updated = [resource, ...userUploadedResources];
+    setUserUploadedResources(updated);
+    localStorage.setItem(USER_UPLOADS_KEY, JSON.stringify(updated));
+  };
+
+  const addUserSimulator = (simulator: GrandTest) => {
+    const updated = [simulator, ...userGeneratedSimulators];
+    setUserGeneratedSimulators(updated);
+    localStorage.setItem(USER_SIMULATORS_KEY, JSON.stringify(updated));
+  };
+
   return (
     <AppContext.Provider value={{
       profile,
@@ -784,6 +809,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       resources,
       addResource,
       verifyResource,
+      userUploadedResources,
+      uploadUserResource,
+      userGeneratedSimulators,
+      addUserSimulator,
       gtAttempts,
       recordGrandTestAttempt,
       isSearchOpen,

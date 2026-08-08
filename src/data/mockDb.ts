@@ -1721,69 +1721,7 @@ export const OFFICIAL_EXAM_INFO: OfficialExamInfo = {
 };
 
 // Grand Test Simulations
-export const GRAND_TESTS: GrandTest[] = [
-  // PYQ Authentic Test Mocks
-  {
-    id: 'gt_fmge_2024_june',
-    title: 'FMGE June 2024 - Authentic PYQ Exam',
-    description: 'Solve the exact paper from the FMGE June 2024 session to evaluate your current standing.',
-    questionCount: 300,
-    durationMinutes: 150,
-    isSimulation: true,
-    subjectsIncluded: ['All 19 Subjects'],
-    questions: QUESTIONS.filter(q => q.isVerifiedPyq && q.examName === 'FMGE' && q.pyqYear === 2024)
-  },
-  {
-    id: 'gt_neetpg_2023',
-    title: 'NEET PG 2023 - Authentic PYQ Exam',
-    description: 'Take the NEET PG 2023 authentic past paper.',
-    questionCount: 200,
-    durationMinutes: 210,
-    isSimulation: true,
-    subjectsIncluded: ['All 19 Subjects'],
-    questions: QUESTIONS.filter(q => q.isVerifiedPyq && q.examName === 'NEET PG' && q.pyqYear === 2023)
-  },
-  {
-    id: 'gt_inicet_2023_nov',
-    title: 'INI-CET Nov 2023 - Authentic PYQ Exam',
-    description: 'Take the INI-CET Nov 2023 authentic past paper.',
-    questionCount: 200,
-    durationMinutes: 180,
-    isSimulation: true,
-    subjectsIncluded: ['All 19 Subjects'],
-    questions: QUESTIONS.filter(q => q.isVerifiedPyq && q.examName === 'INI-CET' && q.pyqYear === 2023)
-  },
-  {
-    id: 'gt_mini_50',
-    title: 'FMGE Rapid Diagnostic Assessment (50 MCQs)',
-    description: 'A 50-question high-yield mixed subject diagnostic test to evaluate your baseline strengths and weaknesses across all 19 subjects.',
-    questionCount: 50,
-    durationMinutes: 50,
-    isSimulation: false,
-    subjectsIncluded: ['Medicine', 'Surgery', 'OBG', 'PSM', 'Pharmacology', 'Pathology', 'Anatomy', 'Pediatrics'],
-    questions: QUESTIONS.slice(0, 50)
-  },
-  {
-    id: 'gt_half_150',
-    title: 'FMGE Part-1 Simulation (150 MCQs)',
-    description: 'Authentic 150-question, 150-minute exam simulation matching the official NBEMS morning session blueprint with timer and question palette.',
-    questionCount: 150,
-    durationMinutes: 150,
-    isSimulation: false,
-    subjectsIncluded: ['Pre-Clinical', 'Para-Clinical', 'Core Clinical'],
-    questions: QUESTIONS
-  },
-  {
-    id: 'gt_full_300',
-    title: 'FMGE Full Exam Simulation (300 MCQs, 2 Parts)',
-    description: 'Complete full-length 300-question simulation mimicking the exact 2.5 hour x 2 sessions real exam conditions with deep AI GT analysis.',
-    questionCount: 300,
-    durationMinutes: 300,
-    isSimulation: true,
-    subjectsIncluded: ['All 19 FMGE Subjects (Pre-Clinical, Para-Clinical, Clinical)'],
-    questions: QUESTIONS
-  }
-];
+export const GRAND_TESTS: GrandTest[] = generatedDb.grandTests as GrandTest[];
 
 // Sample Community Posts for Discussion Board
 export const SAMPLE_COMMUNITY_POSTS: CommunityPost[] = [
